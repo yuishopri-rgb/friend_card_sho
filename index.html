@@ -220,6 +220,7 @@
 </div>
 
 <script>
+const HEART_ICO = '<svg width="36" height="36" viewBox="0 0 24 24" fill="#f9b8d4" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwiWgNu6Vcw9Gyk3UHxCS9bSomX9T8WeWpeRIJDM93D3aYwOoesz-QnY9EJdCMbsHOSetZFv7sIrIp/pub?output=csv";
 const PAGE_SIZE = 20;
 const CI = { chara:0, code:1, img:2, yomi:3, note1:4, note2:5 };
@@ -303,7 +304,7 @@ function rowsToData(rows){
 }
 
 async function fetchData(){
-  showState("<svg width="36" height="36" viewBox="0 0 24 24" fill="#f9b8d4" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>","読み込み中…");
+  showState(HEART_ICO,"読み込み中…");
   const ck="freca_v7",ct="freca_t7",TTL=5*60*1000;
   try{
     const c=sessionStorage.getItem(ck),t=sessionStorage.getItem(ct);
