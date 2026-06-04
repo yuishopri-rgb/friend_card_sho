@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>フレカ管理</title>
+<style>
+  :root {
+    --pink: #f472b6;
+    --pink-dark: #db2777;
+    --pink-light: #fce7f3;
+    --pink-pale: #fdf2f8;
+    --text: #1f1f1f;
+    --text-muted: #888;
+    --border: #f0d4e8;
+    --bg: #fff9fc;
+    --card-bg: #ffffff;
+    --radius: 14px;
+    --tab-h: 52px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--pink);
+    padding: 14px 16px 10px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.02em;
+  }
+  .reload-btn {
+    background: rgba(255,255,255,0.25);
+    border: none;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    font-size: 16px;
+    transition: background 0.15s;
+  }
+  .reload-btn:active { background: rgba(255,255,255,0.45); }
+
+  /* search */
+  .search-wrap {
+    position: relative;
+  }
+  .search-wrap svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    stroke: var(--text-muted);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .search-wrap input {
+    width: 100%;
+    background: rgba(255,255,255,0.92);
+    border: none;
+    border-radius: 24px;
+    padding: 9px 14px 9px 36px;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    font-family: inherit;
+  }
+  .search-wrap input::placeholder { color: #bbb; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    position: sticky;
+    top: var(--tab-h);
+    z-index: 15;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 0 0 auto;
+    padding: 11px 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2.5px solid transparent;
+    white-space: nowrap;
+    transition: color 0.15s;
+    font-family: inherit;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  .tab.active { color: var(--pink-dark); border-bottom-color: var(--pink); font-weight: 600; }
+
+  /* ── Grid ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s;
+    position: relative;
+  }
+  .card:active { transform: scale(0.97); }
+
+  .card-img-wrap {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    background: var(--pink-light);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .card-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, #fce7f3, #ede9fe);
+    font-size: 36px;
+  }
+  .card-skeleton {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #f5e6f0 25%, #fce7f3 50%, #f5e6f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .card-body {
+    padding: 8px 10px;
+  }
+  .card-chara {
+    font-size: 10px;
+    color: var(--pink);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .card-name {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.45;
+    margin-top: 2px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ── States ── */
+  .state {
+    grid-column: 1 / -1;
+    padding: 48px 16px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .state .icon { font-size: 40px; margin-bottom: 12px; display: block; }
+  .state a { color: var(--pink-dark); text-decoration: none; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 100;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.22s ease-out;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  .modal-handle {
+    width: 36px; height: 4px;
+    background: #ddd;
+    border-radius: 99px;
+    margin: 12px auto 0;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px 0;
+  }
+  .modal-back {
+    background: var(--pink-light);
+    border: none;
+    border-radius: 50%;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--pink-dark);
+    flex-shrink: 0;
+  }
+  .modal-title-wrap { flex: 1; min-width: 0; }
+  .modal-chara-label {
+    font-size: 11px;
+    color: var(--pink);
+    font-weight: 600;
+  }
+  .modal-code-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.35;
+  }
+
+  .modal-img-wrap {
+    margin: 16px auto;
+    max-width: 240px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--pink-light);
+    aspect-ratio: 2/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .modal-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 60px;
+    background: linear-gradient(145deg, #fce7f3, #ede9fe);
+  }
+
+  .modal-meta {
+    padding: 0 20px 20px;
+  }
+  .modal-yomi {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    letter-spacing: 0.03em;
+  }
+  .modal-note {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--text-muted);
+    background: var(--pink-pale);
+    border-radius: 10px;
+    padding: 10px 14px;
+    line-height: 1.6;
+  }
+
+  /* ── Setup Banner ── */
+  .setup-banner {
+    margin: 12px;
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 13px;
+    color: #795548;
+    line-height: 1.7;
+    display: none;
+  }
+  .setup-banner.show { display: block; }
+  .setup-banner strong { color: #5d4037; font-weight: 600; }
+  .setup-banner code {
+    background: #fff3cd;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 12px;
+    font-family: monospace;
+    word-break: break-all;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1 id="header-title">フレカ管理</h1>
+    <button class="reload-btn" id="reload-btn" title="再読み込み" aria-label="再読み込み">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+        <path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+    </button>
+  </div>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="search" id="search" placeholder="コード名・よみで検索">
+  </div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="setup-banner" id="setup-banner">
+  <strong>設定が必要です</strong><br>
+  このファイルをテキストエディタで開き、上部の <code>SHEET_CSV_URL</code> にスプレッドシートのCSV公開URLを貼り付けてください。<br><br>
+  スプレッドシート → ファイル → 共有 → ウェブに公開 → CSV → URLをコピー
+</div>
+
+<div class="grid" id="grid">
+  <div class="state">
+    <span class="icon">🌸</span>
+    読み込み中…
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <button class="modal-back" id="modal-back">←</button>
+      <div class="modal-title-wrap">
+        <div class="modal-chara-label" id="modal-chara-label"></div>
+        <div class="modal-code-title" id="modal-code-title"></div>
+      </div>
+    </div>
+    <div class="modal-img-wrap" id="modal-img-wrap"></div>
+    <div class="modal-meta">
+      <div class="modal-yomi" id="modal-yomi"></div>
+      <div class="modal-note" id="modal-note" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+//  ★ ここを編集してください ★
+//  Google スプレッドシート → ファイル → 共有 → ウェブに公開
+//  → シート選択 → CSV → URLをコピーして貼り付け
+// ================================================================
+const SHEET_CSV_URL = "";
+// 例: "https://docs.google.com/spreadsheets/d/xxxxx/pub?gid=0&single=true&output=csv"
+
+// 列の対応（スプレッドシートの列名と合わせてください）
+const COL = {
+  chara:  "キャラ名",   // タブ・キャラ名
+  code:   "コード名",   // カードタイトル
+  img:    "画像URL",    // Cloudinary URL
+  yomi:   "備考1",      // よみ（備考1列）
+  note1:  "備考2",
+  note2:  "備考3",
+};
+
+// ================================================================
+
+let allData = [];
+let activeChara = "";
+let searchQ = "";
+
+const gridEl   = document.getElementById("grid");
+const tabsEl   = document.getElementById("tabs");
+const headerTitle = document.getElementById("header-title");
+const searchEl = document.getElementById("search");
+const overlay  = document.getElementById("modal-overlay");
+const banner   = document.getElementById("setup-banner");
+
+// ── CSV parse (RFC 4180 compatible) ──
+function parseCSV(text) {
+  const rows = [];
+  let row = [], field = "", inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], n = text[i+1];
+    if (inQ) {
+      if (c === '"' && n === '"') { field += '"'; i++; }
+      else if (c === '"') { inQ = false; }
+      else { field += c; }
+    } else {
+      if (c === '"') { inQ = true; }
+      else if (c === ',') { row.push(field); field = ""; }
+      else if (c === '\r' && n === '\n') { row.push(field); rows.push(row); row = []; field = ""; i++; }
+      else if (c === '\n' || c === '\r') { row.push(field); rows.push(row); row = []; field = ""; }
+      else { field += c; }
+    }
+  }
+  if (field || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+function csvToObjects(rows) {
+  if (rows.length < 2) return [];
+  const headers = rows[0];
+  return rows.slice(1).filter(r => r.some(c => c.trim())).map(r => {
+    const obj = {};
+    headers.forEach((h, i) => { obj[h.trim()] = (r[i] || "").trim(); });
+    return obj;
+  });
+}
+
+// ── Fetch with cache ──
+async function fetchData() {
+  if (!SHEET_CSV_URL) {
+    banner.classList.add("show");
+    showState("🔧", "URLを設定してください", "上の黄色いバナーをご確認ください");
+    return;
+  }
+
+  showState("🌸", "読み込み中…", "");
+
+  // キャッシュキーにURLハッシュを使用
+  const cacheKey = "freca_data";
+  const cacheTimeKey = "freca_time";
+  const CACHE_TTL = 5 * 60 * 1000; // 5分キャッシュ
+
+  const cached = sessionStorage.getItem(cacheKey);
+  const cachedTime = sessionStorage.getItem(cacheTimeKey);
+  if (cached && cachedTime && Date.now() - Number(cachedTime) < CACHE_TTL) {
+    allData = JSON.parse(cached);
+    buildTabs();
+    return;
+  }
+
+  try {
+    // no-store でブラウザキャッシュ回避しつつ、自前でSessionStorageキャッシュ
+    const res = await fetch(SHEET_CSV_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    allData = csvToObjects(rows);
+    sessionStorage.setItem(cacheKey, JSON.stringify(allData));
+    sessionStorage.setItem(cacheTimeKey, String(Date.now()));
+    buildTabs();
+  } catch (e) {
+    showState("⚠️", "読み込みに失敗しました", `エラー: ${e.message}<br><a href="javascript:fetchData()">再試行</a>`);
+  }
+}
+
+function buildTabs() {
+  const charas = [...new Set(allData.map(d => d[COL.chara]).filter(Boolean))];
+  if (!charas.length) { showState("📭", "データがありません", "スプレッドシートを確認してください"); return; }
+
+  tabsEl.innerHTML = "";
+  charas.forEach((c, i) => {
+    const btn = document.createElement("button");
+    btn.className = "tab" + (i === 0 ? " active" : "");
+    btn.textContent = c;
+    btn.onclick = () => {
+      tabsEl.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      btn.classList.add("active");
+      activeChara = c;
+      headerTitle.textContent = c;
+      renderGrid();
+    };
+    tabsEl.appendChild(btn);
+  });
+
+  activeChara = charas[0];
+  headerTitle.textContent = charas[0];
+  renderGrid();
+}
+
+function renderGrid() {
+  const q = searchQ.toLowerCase();
+  const filtered = allData.filter(d => {
+    if (d[COL.chara] !== activeChara) return false;
+    if (!q) return true;
+    return (d[COL.code] || "").includes(q) || (d[COL.yomi] || "").includes(q);
+  });
+
+  if (!filtered.length) {
+    showState("🔍", "見つかりません", "別のキーワードで試してください");
+    return;
+  }
+
+  // カードをまとめて生成（DOM操作を最小化）
+  const fragment = document.createDocumentFragment();
+  filtered.forEach((d, i) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.idx = i;
+
+    const imgURL = d[COL.img] || "";
+
+    card.innerHTML = `
+      <div class="card-img-wrap">
+        ${imgURL
+          ? `<img src="${escHtml(imgURL)}" alt="${escHtml(d[COL.code])}" loading="lazy" decoding="async">`
+          : `<div class="card-placeholder">🌸</div>`}
+      </div>
+      <div class="card-body">
+        <div class="card-chara">${escHtml(d[COL.chara])}</div>
+        <div class="card-name">${escHtml(d[COL.code])}</div>
+      </div>`;
+
+    card.onclick = () => openModal(d);
+    fragment.appendChild(card);
+  });
+
+  gridEl.innerHTML = "";
+  gridEl.appendChild(fragment);
+}
+
+function showState(icon, title, sub) {
+  gridEl.innerHTML = `<div class="state"><span class="icon">${icon}</span><strong>${escHtml(title)}</strong><br><span>${sub}</span></div>`;
+}
+
+// ── Modal ──
+function openModal(d) {
+  document.getElementById("modal-chara-label").textContent = d[COL.chara];
+  document.getElementById("modal-code-title").textContent = d[COL.code];
+  document.getElementById("modal-yomi").textContent = d[COL.yomi] ? "よみ：" + d[COL.yomi] : "";
+
+  const note = [d[COL.note1], d[COL.note2]].filter(Boolean).join("　");
+  const noteEl = document.getElementById("modal-note");
+  if (note) { noteEl.textContent = note; noteEl.style.display = "block"; }
+  else { noteEl.style.display = "none"; }
+
+  const imgWrap = document.getElementById("modal-img-wrap");
+  const url = d[COL.img] || "";
+  imgWrap.innerHTML = url
+    ? `<img src="${escHtml(url)}" alt="${escHtml(d[COL.code])}" loading="lazy">`
+    : `<div class="modal-placeholder">🌸</div>`;
+
+  overlay.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal() {
+  overlay.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+document.getElementById("modal-back").onclick = closeModal;
+overlay.onclick = e => { if (e.target === overlay) closeModal(); };
+
+// ── Events ──
+searchEl.addEventListener("input", e => {
+  searchQ = e.target.value;
+  renderGrid();
+});
+
+document.getElementById("reload-btn").onclick = () => {
+  sessionStorage.removeItem("freca_data");
+  sessionStorage.removeItem("freca_time");
+  fetchData();
+};
+
+// スワイプでモーダルを閉じる
+let touchStartY = 0;
+document.getElementById("modal").addEventListener("touchstart", e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+document.getElementById("modal").addEventListener("touchend", e => {
+  if (e.changedTouches[0].clientY - touchStartY > 60) closeModal();
+}, { passive: true });
+
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ── Start ──
+fetchData();
+</script>
+</body>
+</html>
