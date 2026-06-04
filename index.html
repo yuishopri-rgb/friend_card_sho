@@ -14,8 +14,7 @@
     --text-muted: #888;
     --border: #f0d4e8;
     --bg: #fff9fc;
-    --card-bg: #ffffff;
-    --radius: 14px;
+    --footer-h: 68px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -27,6 +26,7 @@
     min-height: 100vh;
     max-width: 480px;
     margin: 0 auto;
+    padding-bottom: var(--footer-h);
   }
 
   /* ── Header ── */
@@ -38,28 +38,16 @@
     z-index: 20;
   }
   .header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 10px;
   }
-  .header h1 {
-    font-size: 22px;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: 0.02em;
-  }
+  .header h1 { font-size: 22px; font-weight: 700; color: #fff; }
   .reload-btn {
-    background: rgba(255,255,255,0.25);
-    border: none;
-    border-radius: 50%;
-    width: 34px; height: 34px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: #fff; font-size: 16px;
-    transition: background 0.15s;
+    background: rgba(255,255,255,0.25); border: none; border-radius: 50%;
+    width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #fff;
   }
   .reload-btn:active { background: rgba(255,255,255,0.45); }
-
   .search-wrap { position: relative; }
   .search-wrap svg {
     position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
@@ -73,56 +61,63 @@
   }
   .search-wrap input::placeholder { color: #bbb; }
 
-  /* ── Tabs ── */
-  .tabs {
-    display: flex; background: #fff;
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto; scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    position: sticky; top: 88px; z-index: 15;
-  }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab {
-    flex: 0 0 auto; padding: 11px 14px; font-size: 13px;
-    color: var(--text-muted); cursor: pointer;
-    border-bottom: 2.5px solid transparent; white-space: nowrap;
-    transition: color 0.15s; font-family: inherit;
-    background: none; border-top: none; border-left: none; border-right: none;
-  }
-  .tab.active { color: var(--pink-dark); border-bottom-color: var(--pink); font-weight: 600; }
-
   /* ── Grid ── */
   .grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px; padding: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px; padding: 10px;
   }
 
   .card {
-    background: var(--card-bg); border-radius: var(--radius);
+    background: #fff; border-radius: 10px;
     border: 1px solid var(--border); overflow: hidden;
     cursor: pointer; transition: transform 0.12s;
   }
-  .card:active { transform: scale(0.97); }
+  .card:active { transform: scale(0.96); }
 
+  /* カード画像：上40%だけ見せる（絵の部分をアップで） */
   .card-img-wrap {
-    width: 100%; aspect-ratio: 2 / 3;
-    background: var(--pink-light); overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
+    width: 100%;
+    padding-top: 60%; /* 表示高さ = 幅の60% */
+    position: relative;
+    overflow: hidden;
+    background: var(--pink-light);
   }
-  .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card-img-wrap img {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    /* カード全体の上部だけ見せる: aspect-ratio 2:3なので高さは幅の150% */
+    height: 250%;
+    object-fit: cover;
+    object-position: top center;
+  }
   .card-placeholder {
-    width: 100%; height: 100%; display: flex;
-    align-items: center; justify-content: center;
-    background: linear-gradient(145deg, #fce7f3, #ede9fe); font-size: 36px;
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(145deg, #fce7f3, #ede9fe); font-size: 28px;
   }
 
-  .card-body { padding: 8px 10px; }
-  .card-chara { font-size: 10px; color: var(--pink); font-weight: 600; letter-spacing: 0.04em; }
+  .card-body { padding: 5px 7px 6px; }
+  .card-chara { font-size: 9px; color: var(--pink); font-weight: 600; }
   .card-name {
-    font-size: 12px; color: var(--text); line-height: 1.45; margin-top: 2px;
+    font-size: 10px; color: var(--text); line-height: 1.4; margin-top: 1px;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
+
+  /* ── Pagination ── */
+  .pagination {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 14px 16px;
+  }
+  .page-btn {
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    padding: 7px 14px; font-size: 13px; color: var(--text-muted);
+    cursor: pointer; font-family: inherit;
+  }
+  .page-btn.active { background: var(--pink); border-color: var(--pink); color: #fff; font-weight: 600; }
+  .page-btn:disabled { opacity: 0.35; cursor: default; }
+  .page-info { font-size: 13px; color: var(--text-muted); padding: 0 6px; }
 
   .state {
     grid-column: 1 / -1; padding: 48px 16px;
@@ -130,14 +125,39 @@
   }
   .state .icon { font-size: 40px; margin-bottom: 12px; display: block; }
 
-  /* ── Modal（ボトムシート） ── */
+  /* ── Footer Nav ── */
+  .footer-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: #fff;
+    border-top: 1px solid var(--border);
+    display: flex;
+    height: var(--footer-h);
+    z-index: 30;
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px; cursor: pointer; border: none; background: none;
+    font-family: inherit; padding: 8px 4px;
+    color: var(--text-muted); font-size: 11px;
+    transition: color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nav-item .nav-icon {
+    font-size: 22px; line-height: 1;
+    transition: transform 0.15s;
+  }
+  .nav-item.active { color: var(--pink-dark); }
+  .nav-item.active .nav-icon { transform: scale(1.15); }
+
+  /* ── Modal ── */
   .modal-overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.55); z-index: 100;
     align-items: flex-end; justify-content: center;
   }
   .modal-overlay.open { display: flex; }
-
   .modal {
     background: #fff; border-radius: 24px 24px 0 0;
     width: 100%; max-width: 480px; max-height: 92vh;
@@ -147,12 +167,10 @@
     from { transform: translateY(30px); opacity: 0; }
     to   { transform: translateY(0); opacity: 1; }
   }
-
   .modal-handle {
     width: 36px; height: 4px; background: #ddd;
     border-radius: 99px; margin: 12px auto 0;
   }
-
   .modal-header {
     display: flex; align-items: center; gap: 8px; padding: 14px 16px 0;
   }
@@ -164,21 +182,21 @@
   .modal-title-wrap { flex: 1; min-width: 0; }
   .modal-chara-label { font-size: 11px; color: var(--pink); font-weight: 600; }
   .modal-code-title { font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.35; }
-
   .modal-img-wrap {
-    margin: 16px auto; max-width: 240px;
-    border-radius: 16px; overflow: hidden;
-    border: 1px solid var(--border); background: var(--pink-light);
-    aspect-ratio: 2/3; display: flex; align-items: center; justify-content: center;
+    margin: 16px auto; max-width: 220px;
+    border-radius: 14px; overflow: hidden;
+    border: 1px solid var(--border);
+    aspect-ratio: 2/3;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--pink-light);
   }
   .modal-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
   .modal-placeholder {
     width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
     font-size: 60px; background: linear-gradient(145deg, #fce7f3, #ede9fe);
   }
-
   .modal-meta { padding: 0 20px 32px; }
-  .modal-yomi { font-size: 13px; color: var(--text-muted); margin-top: 6px; letter-spacing: 0.03em; }
+  .modal-yomi { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
   .modal-note {
     margin-top: 10px; font-size: 13px; color: var(--text-muted);
     background: var(--pink-pale); border-radius: 10px; padding: 10px 14px; line-height: 1.6;
@@ -202,9 +220,37 @@
   </div>
 </div>
 
-<div class="tabs" id="tabs"></div>
-<div class="grid" id="grid"><div class="state"><span class="icon">🌸</span>読み込み中…</div></div>
+<div class="grid" id="grid">
+  <div class="state"><span class="icon">🌸</span>読み込み中…</div>
+</div>
+<div class="pagination" id="pagination"></div>
 
+<!-- Footer Nav -->
+<nav class="footer-nav" id="footer-nav">
+  <button class="nav-item active" data-filter="null" data-label="みんな">
+    <span class="nav-icon">🌸</span><span>みんな</span>
+  </button>
+  <button class="nav-item" data-filter="ゆいしょ" data-label="ゆいしょ">
+    <span class="nav-icon">💛</span><span>ゆいしょ</span>
+  </button>
+  <button class="nav-item" data-filter="りいしょ" data-label="りいしょ">
+    <span class="nav-icon">🩷</span><span>りいしょ</span>
+  </button>
+  <button class="nav-item" data-filter="ういしょ" data-label="ういしょ">
+    <span class="nav-icon">🩵</span><span>ういしょ</span>
+  </button>
+  <button class="nav-item" data-filter="れいしょ" data-label="れいしょ">
+    <span class="nav-icon">💜</span><span>れいしょ</span>
+  </button>
+  <button class="nav-item" data-filter="よいしょ" data-label="よいしょ">
+    <span class="nav-icon">💚</span><span>よいしょ</span>
+  </button>
+  <button class="nav-item" data-filter="ないしょ" data-label="ないしょ">
+    <span class="nav-icon">🤍</span><span>ないしょ</span>
+  </button>
+</nav>
+
+<!-- Modal -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="modal">
     <div class="modal-handle"></div>
@@ -224,12 +270,8 @@
 </div>
 
 <script>
-// ================================================================
-//  設定
-// ================================================================
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwiWgNu6Vcw9Gyk3UHxCS9bSomX9T8WeWpeRIJDM93D3aYwOoesz-QnY9EJdCMbsHOSetZFv7sIrIp/pub?output=csv";
 
-// スプレッドシートの列名
 const COL = {
   chara: "キャラ名",
   code:  "コード名",
@@ -239,139 +281,98 @@ const COL = {
   note2: "備考3",
 };
 
-// タブ定義（順番・表示名・フィルター値）
-// filterがnullの場合は全件表示（みんなタブ）
-const TABS = [
-  { label: "みんな",   filter: null       },
-  { label: "ゆいしょ", filter: "ゆいしょ" },
-  { label: "りいしょ", filter: "りいしょ" },
-  { label: "ういしょ", filter: "ういしょ" },
-  { label: "れいしょ", filter: "れいしょ" },
-  { label: "よいしょ", filter: "よいしょ" },
-  { label: "ないしょ", filter: "ないしょ" },
-];
-// ================================================================
+const PAGE_SIZE = 20;
 
-let allData = [];
+let allData    = [];
 let activeFilter = null; // null = みんな
-let searchQ = "";
+let searchQ    = "";
+let currentPage = 1;
 
 const gridEl      = document.getElementById("grid");
-const tabsEl      = document.getElementById("tabs");
+const paginationEl= document.getElementById("pagination");
 const headerTitle = document.getElementById("header-title");
 const searchEl    = document.getElementById("search");
 const overlay     = document.getElementById("modal-overlay");
 
-// ── CSV parse ──
+// ── CSV ──
 function parseCSV(text) {
   const rows = [];
   let row = [], field = "", inQ = false;
   for (let i = 0; i < text.length; i++) {
-    const c = text[i], n = text[i + 1];
+    const c = text[i], n = text[i+1];
     if (inQ) {
-      if (c === '"' && n === '"') { field += '"'; i++; }
-      else if (c === '"') { inQ = false; }
-      else { field += c; }
+      if (c==='"'&&n==='"'){field+='"';i++;}
+      else if(c==='"'){inQ=false;}
+      else{field+=c;}
     } else {
-      if (c === '"') { inQ = true; }
-      else if (c === ',') { row.push(field); field = ""; }
-      else if (c === '\r' && n === '\n') { row.push(field); rows.push(row); row = []; field = ""; i++; }
-      else if (c === '\n' || c === '\r') { row.push(field); rows.push(row); row = []; field = ""; }
-      else { field += c; }
+      if(c==='"'){inQ=true;}
+      else if(c===','){row.push(field);field="";}
+      else if(c==='\r'&&n==='\n'){row.push(field);rows.push(row);row=[];field="";i++;}
+      else if(c==='\n'||c==='\r'){row.push(field);rows.push(row);row=[];field="";}
+      else{field+=c;}
     }
   }
-  if (field || row.length) { row.push(field); rows.push(row); }
+  if(field||row.length){row.push(field);rows.push(row);}
   return rows;
 }
-
 function csvToObjects(rows) {
-  if (rows.length < 2) return [];
-  const headers = rows[0].map(h => h.trim());
-  return rows.slice(1)
-    .filter(r => r.some(c => c.trim()))
-    .map(r => {
-      const obj = {};
-      headers.forEach((h, i) => { obj[h] = (r[i] || "").trim(); });
-      return obj;
-    });
+  if(rows.length<2) return [];
+  const headers = rows[0].map(h=>h.trim());
+  return rows.slice(1).filter(r=>r.some(c=>c.trim())).map(r=>{
+    const obj={};
+    headers.forEach((h,i)=>{obj[h]=(r[i]||"").trim();});
+    return obj;
+  });
 }
 
 // ── Fetch ──
 async function fetchData() {
-  showState("🌸", "読み込み中…", "");
-
-  const cacheKey  = "freca_data_v2";
-  const cacheTime = "freca_time_v2";
-  const TTL = 5 * 60 * 1000;
-
+  showState("🌸","読み込み中…","");
+  const cacheKey="freca_v3", cacheTime="freca_t3", TTL=5*60*1000;
   try {
-    const cached = sessionStorage.getItem(cacheKey);
-    const ct     = sessionStorage.getItem(cacheTime);
-    if (cached && ct && Date.now() - Number(ct) < TTL) {
-      allData = JSON.parse(cached);
-      buildTabs();
-      return;
-    }
-  } catch(e) {}
-
+    const c=sessionStorage.getItem(cacheKey), t=sessionStorage.getItem(cacheTime);
+    if(c&&t&&Date.now()-Number(t)<TTL){allData=JSON.parse(c);render();return;}
+  } catch(e){}
   try {
-    const res = await fetch(SHEET_CSV_URL, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
-    allData = csvToObjects(parseCSV(text));
-    try {
-      sessionStorage.setItem(cacheKey, JSON.stringify(allData));
-      sessionStorage.setItem(cacheTime, String(Date.now()));
-    } catch(e) {}
-    buildTabs();
-  } catch (e) {
-    showState("⚠️", "読み込みに失敗しました", `エラー: ${e.message}`);
+    const res=await fetch(SHEET_CSV_URL,{cache:"no-store"});
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    allData=csvToObjects(parseCSV(await res.text()));
+    try{sessionStorage.setItem(cacheKey,JSON.stringify(allData));sessionStorage.setItem(cacheTime,String(Date.now()));}catch(e){}
+    render();
+  } catch(e) {
+    showState("⚠️","読み込みに失敗しました",`エラー: ${e.message}`);
   }
 }
 
-// ── Tabs ──
-function buildTabs() {
-  tabsEl.innerHTML = "";
-  TABS.forEach((t, i) => {
-    const btn = document.createElement("button");
-    btn.className = "tab" + (i === 0 ? " active" : "");
-    btn.textContent = t.label;
-    btn.onclick = () => {
-      tabsEl.querySelectorAll(".tab").forEach(el => el.classList.remove("active"));
-      btn.classList.add("active");
-      activeFilter = t.filter;
-      headerTitle.textContent = t.label;
-      searchEl.value = "";
-      searchQ = "";
-      renderGrid();
-    };
-    tabsEl.appendChild(btn);
-  });
-  activeFilter = null;
-  headerTitle.textContent = "みんな";
-  renderGrid();
-}
-
-// ── Grid ──
-function renderGrid() {
+// ── Filter + Paginate ──
+function getFiltered() {
   const q = searchQ.toLowerCase();
-  const filtered = allData.filter(d => {
+  return allData.filter(d => {
     if (activeFilter !== null && d[COL.chara] !== activeFilter) return false;
     if (!q) return true;
-    return (d[COL.code] || "").includes(q) || (d[COL.yomi] || "").includes(q);
+    return (d[COL.code]||"").includes(q)||(d[COL.yomi]||"").includes(q);
   });
+}
 
-  if (!filtered.length) {
-    showState("🔍", "見つかりません", "別のキーワードで試してください");
+function render() {
+  const filtered = getFiltered();
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = 1;
+
+  const pageData = filtered.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+
+  if (!pageData.length) {
+    showState("🔍","見つかりません","別のキーワードで試してください");
+    paginationEl.innerHTML = "";
     return;
   }
 
-  const fragment = document.createDocumentFragment();
-  filtered.forEach(d => {
+  const frag = document.createDocumentFragment();
+  pageData.forEach(d => {
     const card = document.createElement("div");
     card.className = "card";
-    const imgURL = d[COL.img] || "";
-    const codeName = d[COL.code] || "";
+    const imgURL = d[COL.img]||"";
+    const codeName = d[COL.code]||"";
     card.innerHTML = `
       <div class="card-img-wrap">
         ${imgURL
@@ -379,70 +380,90 @@ function renderGrid() {
           : `<div class="card-placeholder">🌸</div>`}
       </div>
       <div class="card-body">
-        <div class="card-chara">${esc(d[COL.chara] || "")}</div>
+        <div class="card-chara">${esc(d[COL.chara]||"")}</div>
         <div class="card-name">${esc(codeName)}</div>
       </div>`;
     card.onclick = () => openModal(d);
-    fragment.appendChild(card);
+    frag.appendChild(card);
   });
-
   gridEl.innerHTML = "";
-  gridEl.appendChild(fragment);
+  gridEl.appendChild(frag);
+
+  // Pagination
+  renderPagination(totalPages);
 }
+
+function renderPagination(totalPages) {
+  if (totalPages <= 1) { paginationEl.innerHTML=""; return; }
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?"disabled":""}>‹ 前</button>`;
+  html += `<span class="page-info">${currentPage} / ${totalPages}</span>`;
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?"disabled":""}>次 ›</button>`;
+  paginationEl.innerHTML = html;
+}
+
+window.goPage = function(p) {
+  currentPage = p;
+  render();
+  window.scrollTo({top:0, behavior:"smooth"});
+};
 
 function showState(icon, title, sub) {
   gridEl.innerHTML = `<div class="state"><span class="icon">${icon}</span><strong>${esc(title)}</strong><br><span>${sub}</span></div>`;
+  paginationEl.innerHTML = "";
 }
+
+// ── Footer Nav ──
+document.querySelectorAll(".nav-item").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    const f = btn.dataset.filter;
+    activeFilter = (f === "null") ? null : f;
+    headerTitle.textContent = btn.dataset.label;
+    searchEl.value = "";
+    searchQ = "";
+    currentPage = 1;
+    render();
+    window.scrollTo({top:0, behavior:"smooth"});
+  };
+});
 
 // ── Modal ──
 function openModal(d) {
-  document.getElementById("modal-chara-label").textContent = d[COL.chara] || "";
-  document.getElementById("modal-code-title").textContent  = d[COL.code]  || "";
-  document.getElementById("modal-yomi").textContent = d[COL.yomi] ? "よみ：" + d[COL.yomi] : "";
-
-  const note = [d[COL.note1], d[COL.note2]].filter(Boolean).join("　");
+  document.getElementById("modal-chara-label").textContent = d[COL.chara]||"";
+  document.getElementById("modal-code-title").textContent  = d[COL.code]||"";
+  document.getElementById("modal-yomi").textContent = d[COL.yomi] ? "よみ："+d[COL.yomi] : "";
+  const note = [d[COL.note1],d[COL.note2]].filter(Boolean).join("　");
   const noteEl = document.getElementById("modal-note");
-  noteEl.style.display = note ? "block" : "none";
+  noteEl.style.display = note?"block":"none";
   noteEl.textContent = note;
-
   const imgWrap = document.getElementById("modal-img-wrap");
-  const url = d[COL.img] || "";
+  const url = d[COL.img]||"";
   imgWrap.innerHTML = url
-    ? `<img src="${esc(url)}" alt="${esc(d[COL.code] || "")}" loading="lazy">`
+    ? `<img src="${esc(url)}" alt="${esc(d[COL.code]||"")}" loading="lazy">`
     : `<div class="modal-placeholder">🌸</div>`;
-
   overlay.classList.add("open");
   document.body.style.overflow = "hidden";
 }
-
 function closeModal() {
   overlay.classList.remove("open");
   document.body.style.overflow = "";
 }
-
 document.getElementById("modal-back").onclick = closeModal;
-overlay.onclick = e => { if (e.target === overlay) closeModal(); };
+overlay.onclick = e => { if(e.target===overlay) closeModal(); };
 
-// スワイプで閉じる
 let touchStartY = 0;
-document.getElementById("modal").addEventListener("touchstart", e => {
-  touchStartY = e.touches[0].clientY;
-}, { passive: true });
-document.getElementById("modal").addEventListener("touchend", e => {
-  if (e.changedTouches[0].clientY - touchStartY > 60) closeModal();
-}, { passive: true });
+document.getElementById("modal").addEventListener("touchstart", e=>{touchStartY=e.touches[0].clientY;},{passive:true});
+document.getElementById("modal").addEventListener("touchend",   e=>{if(e.changedTouches[0].clientY-touchStartY>60)closeModal();},{passive:true});
 
-searchEl.addEventListener("input", e => { searchQ = e.target.value; renderGrid(); });
-
-document.getElementById("reload-btn").onclick = () => {
-  sessionStorage.removeItem("freca_data_v2");
-  sessionStorage.removeItem("freca_time_v2");
+searchEl.addEventListener("input", e=>{searchQ=e.target.value;currentPage=1;render();});
+document.getElementById("reload-btn").onclick=()=>{
+  sessionStorage.removeItem("freca_v3");
+  sessionStorage.removeItem("freca_t3");
   fetchData();
 };
 
-function esc(s) {
-  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 
 fetchData();
 </script>
