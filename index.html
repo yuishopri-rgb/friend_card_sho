@@ -4,463 +4,425 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>フレカ管理</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --pink: #f472b6;
-    --pink-dark: #db2777;
-    --pink-light: #fce7f3;
-    --pink-pale: #fdf2f8;
-    --text: #1f1f1f;
-    --text-muted: #888;
-    --border: #f0d4e8;
-    --bg: #fff9fc;
-    --footer-h: 68px;
+    --pink:      #f06292;
+    --pink-bg:   #fce4ec;
+    --pink-dark: #c2185b;
+    --text:      #424242;
+    --text-sub:  #9e9e9e;
+    --border:    #fce4ec;
+    --bg:        #fdf6f9;
+    --white:     #ffffff;
+    --footer-h:  62px;
+    --radius:    14px;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   body {
-    font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    font-family: 'M PLUS Rounded 1c', 'Hiragino Kaku Gothic ProN', sans-serif;
     background: var(--bg);
     color: var(--text);
-    min-height: 100vh;
     max-width: 480px;
     margin: 0 auto;
-    padding-bottom: var(--footer-h);
+    min-height: 100vh;
+    padding-bottom: calc(var(--footer-h) + 8px);
   }
 
   /* ── Header ── */
   .header {
     background: var(--pink);
-    padding: 14px 16px 10px;
-    position: sticky;
-    top: 0;
-    z-index: 20;
+    padding: 14px 16px 12px;
+    position: sticky; top: 0; z-index: 20;
   }
   .header-top {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
   }
-  .header h1 { font-size: 22px; font-weight: 700; color: #fff; }
+  .header-title {
+    flex: 1; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 0.02em;
+  }
   .reload-btn {
-    background: rgba(255,255,255,0.25); border: none; border-radius: 50%;
-    width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: #fff;
+    background: rgba(255,255,255,0.22); border: none; border-radius: 50%;
+    width: 36px; height: 36px; cursor: pointer; color: #fff;
+    display: flex; align-items: center; justify-content: center;
   }
-  .reload-btn:active { background: rgba(255,255,255,0.45); }
-  .search-wrap { position: relative; }
-  .search-wrap svg {
-    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-    width: 16px; height: 16px; stroke: var(--text-muted); fill: none;
-    stroke-width: 2; stroke-linecap: round;
+  .reload-btn:active { background: rgba(255,255,255,0.4); }
+
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.9); border-radius: 22px;
+    padding: 8px 14px;
   }
-  .search-wrap input {
-    width: 100%; background: rgba(255,255,255,0.92); border: none;
-    border-radius: 24px; padding: 9px 14px 9px 36px;
-    font-size: 14px; color: var(--text); outline: none; font-family: inherit;
+  .search-box svg { flex-shrink: 0; opacity: 0.45; }
+  .search-box input {
+    border: none; background: none; outline: none;
+    font-family: inherit; font-size: 14px; color: var(--text); width: 100%;
   }
-  .search-wrap input::placeholder { color: #bbb; }
+  .search-box input::placeholder { color: #bbb; }
 
   /* ── Grid ── */
   .grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px; padding: 10px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 14px 12px 8px;
   }
 
   .card {
-    background: #fff; border-radius: 10px;
-    border: 1px solid var(--border); overflow: hidden;
-    cursor: pointer; transition: transform 0.12s;
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(240,98,146,0.10);
+    transition: transform 0.13s, box-shadow 0.13s;
   }
-  .card:active { transform: scale(0.96); }
+  .card:active { transform: scale(0.96); box-shadow: 0 1px 2px rgba(240,98,146,0.08); }
 
-  /* カード画像：上40%だけ見せる（絵の部分をアップで） */
-  .card-img-wrap {
+  /* 画像エリア：カードの上 55% だけ見せる（絵の部分） */
+  .card-img {
     width: 100%;
-    padding-top: 60%; /* 表示高さ = 幅の60% */
+    padding-top: 72%;   /* 表示高さ */
     position: relative;
     overflow: hidden;
-    background: var(--pink-light);
+    background: linear-gradient(160deg, #fce4ec 0%, #e8eaf6 100%);
   }
-  .card-img-wrap img {
+  .card-img img {
     position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    /* カード全体の上部だけ見せる: aspect-ratio 2:3なので高さは幅の150% */
-    height: 250%;
+    top: 0; left: 0; width: 100%;
+    /* カード全体は縦2:3比率なので height=150%幅 → 上部だけ見せる */
+    height: 210%;
     object-fit: cover;
     object-position: top center;
+    display: block;
   }
-  .card-placeholder {
+  .card-img .no-img {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(145deg, #fce7f3, #ede9fe); font-size: 28px;
+    font-size: 36px;
   }
 
-  .card-body { padding: 5px 7px 6px; }
-  .card-chara { font-size: 9px; color: var(--pink); font-weight: 600; }
+  .card-body {
+    padding: 8px 10px 10px;
+    border-top: 1px solid var(--border);
+  }
+  .card-chara {
+    font-size: 10px; font-weight: 700;
+    color: var(--pink); letter-spacing: 0.06em; margin-bottom: 3px;
+  }
   .card-name {
-    font-size: 10px; color: var(--text); line-height: 1.4; margin-top: 1px;
+    font-size: 12px; font-weight: 500; color: var(--text);
+    line-height: 1.45;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
 
   /* ── Pagination ── */
   .pagination {
     display: flex; align-items: center; justify-content: center;
-    gap: 6px; padding: 14px 16px;
+    gap: 8px; padding: 12px 16px 16px;
   }
-  .page-btn {
-    background: #fff; border: 1px solid var(--border); border-radius: 8px;
-    padding: 7px 14px; font-size: 13px; color: var(--text-muted);
-    cursor: pointer; font-family: inherit;
+  .pg-btn {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: 20px; padding: 7px 18px;
+    font-size: 13px; font-weight: 500; font-family: inherit;
+    color: var(--text-sub); cursor: pointer;
+    transition: background 0.13s, color 0.13s;
   }
-  .page-btn.active { background: var(--pink); border-color: var(--pink); color: #fff; font-weight: 600; }
-  .page-btn:disabled { opacity: 0.35; cursor: default; }
-  .page-info { font-size: 13px; color: var(--text-muted); padding: 0 6px; }
+  .pg-btn:not(:disabled):hover { background: var(--pink-bg); color: var(--pink-dark); }
+  .pg-btn:disabled { opacity: 0.3; cursor: default; }
+  .pg-info { font-size: 13px; color: var(--text-sub); min-width: 56px; text-align: center; }
 
   .state {
-    grid-column: 1 / -1; padding: 48px 16px;
-    text-align: center; color: var(--text-muted); font-size: 14px; line-height: 1.8;
+    grid-column: 1/-1; padding: 56px 16px; text-align: center;
+    color: var(--text-sub); font-size: 14px; line-height: 2;
   }
-  .state .icon { font-size: 40px; margin-bottom: 12px; display: block; }
+  .state .ico { font-size: 44px; display: block; margin-bottom: 10px; }
 
   /* ── Footer Nav ── */
-  .footer-nav {
+  .footer {
     position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
     width: 100%; max-width: 480px;
-    background: #fff;
-    border-top: 1px solid var(--border);
-    display: flex;
     height: var(--footer-h);
-    z-index: 30;
+    background: var(--white);
+    border-top: 1px solid #f8bbd0;
+    display: flex; z-index: 30;
   }
-  .nav-item {
+  .nav-btn {
     flex: 1; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: 3px; cursor: pointer; border: none; background: none;
-    font-family: inherit; padding: 8px 4px;
-    color: var(--text-muted); font-size: 11px;
+    gap: 3px; border: none; background: none;
+    cursor: pointer; font-family: inherit;
+    color: #bdbdbd; font-size: 10px; font-weight: 500;
+    padding: 6px 2px;
     transition: color 0.15s;
-    -webkit-tap-highlight-color: transparent;
+    position: relative;
   }
-  .nav-item .nav-icon {
-    font-size: 22px; line-height: 1;
-    transition: transform 0.15s;
+  .nav-btn svg { width: 24px; height: 24px; transition: transform 0.15s; }
+  .nav-btn.active { color: var(--pink); }
+  .nav-btn.active svg { transform: scale(1.15); }
+  .nav-btn.active::after {
+    content: '';
+    position: absolute; top: 0; left: 20%; right: 20%; height: 2.5px;
+    background: var(--pink); border-radius: 0 0 3px 3px;
   }
-  .nav-item.active { color: var(--pink-dark); }
-  .nav-item.active .nav-icon { transform: scale(1.15); }
 
   /* ── Modal ── */
-  .modal-overlay {
+  .overlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.55); z-index: 100;
+    background: rgba(0,0,0,0.48); z-index: 100;
     align-items: flex-end; justify-content: center;
   }
-  .modal-overlay.open { display: flex; }
+  .overlay.open { display: flex; }
   .modal {
-    background: #fff; border-radius: 24px 24px 0 0;
-    width: 100%; max-width: 480px; max-height: 92vh;
-    overflow-y: auto; animation: slideUp 0.22s ease-out;
+    background: var(--white); border-radius: 22px 22px 0 0;
+    width: 100%; max-width: 480px; max-height: 90vh;
+    overflow-y: auto; animation: up .2s ease-out;
   }
-  @keyframes slideUp {
-    from { transform: translateY(30px); opacity: 0; }
-    to   { transform: translateY(0); opacity: 1; }
-  }
-  .modal-handle {
-    width: 36px; height: 4px; background: #ddd;
+  @keyframes up { from{transform:translateY(24px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+  .modal-pill {
+    width: 38px; height: 4px; background: #e0e0e0;
     border-radius: 99px; margin: 12px auto 0;
   }
-  .modal-header {
-    display: flex; align-items: center; gap: 8px; padding: 14px 16px 0;
+  .modal-top {
+    display: flex; align-items: center; gap: 10px; padding: 14px 16px 0;
   }
   .modal-back {
-    background: var(--pink-light); border: none; border-radius: 50%;
-    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 18px; color: var(--pink-dark); flex-shrink: 0;
-  }
-  .modal-title-wrap { flex: 1; min-width: 0; }
-  .modal-chara-label { font-size: 11px; color: var(--pink); font-weight: 600; }
-  .modal-code-title { font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.35; }
-  .modal-img-wrap {
-    margin: 16px auto; max-width: 220px;
-    border-radius: 14px; overflow: hidden;
-    border: 1px solid var(--border);
-    aspect-ratio: 2/3;
+    width: 36px; height: 36px; border-radius: 50%;
+    border: none; background: var(--pink-bg); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    background: var(--pink-light);
+    flex-shrink: 0;
   }
-  .modal-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
-  .modal-placeholder {
-    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-    font-size: 60px; background: linear-gradient(145deg, #fce7f3, #ede9fe);
+  .modal-back svg { width: 18px; height: 18px; stroke: var(--pink-dark); fill: none; stroke-width: 2.2; stroke-linecap: round; }
+  .modal-titles { flex: 1; min-width: 0; }
+  .modal-chara { font-size: 11px; font-weight: 700; color: var(--pink); letter-spacing: 0.06em; }
+  .modal-name  { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.3; margin-top: 2px; }
+
+  .modal-card-wrap {
+    margin: 18px auto 0;
+    width: min(220px, 60vw);
+    aspect-ratio: 2/3;
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 4px 20px rgba(240,98,146,0.18);
+    background: linear-gradient(160deg,#fce4ec,#e8eaf6);
   }
-  .modal-meta { padding: 0 20px 32px; }
-  .modal-yomi { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+  .modal-card-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .modal-card-wrap .no-img {
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:60px;
+  }
+
+  .modal-meta { padding: 14px 20px 32px; }
+  .modal-yomi { font-size: 13px; color: var(--text-sub); margin-top: 4px; }
   .modal-note {
-    margin-top: 10px; font-size: 13px; color: var(--text-muted);
-    background: var(--pink-pale); border-radius: 10px; padding: 10px 14px; line-height: 1.6;
+    margin-top: 10px; font-size: 13px; color: var(--text-sub);
+    background: var(--pink-bg); border-radius: 10px; padding: 10px 14px; line-height: 1.65;
   }
 </style>
 </head>
 <body>
 
-<div class="header">
+<header class="header">
   <div class="header-top">
-    <h1 id="header-title">みんな</h1>
+    <div class="header-title" id="header-title">みんな</div>
     <button class="reload-btn" id="reload-btn" aria-label="再読み込み">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
       </svg>
     </button>
   </div>
-  <div class="search-wrap">
-    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="search" id="search" placeholder="コード名・よみで検索">
+  <div class="search-box">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.2" stroke-linecap="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="search" id="search" placeholder="検索">
   </div>
-</div>
+</header>
 
-<div class="grid" id="grid">
-  <div class="state"><span class="icon">🌸</span>読み込み中…</div>
-</div>
-<div class="pagination" id="pagination"></div>
+<main>
+  <div class="grid" id="grid">
+    <div class="state"><span class="ico">🌸</span>読み込み中…</div>
+  </div>
+  <div class="pagination" id="pagination"></div>
+</main>
 
-<!-- Footer Nav -->
-<nav class="footer-nav" id="footer-nav">
-  <button class="nav-item active" data-filter="null" data-label="みんな">
-    <span class="nav-icon">🌸</span><span>みんな</span>
-  </button>
-  <button class="nav-item" data-filter="ゆいしょ" data-label="ゆいしょ">
-    <span class="nav-icon">💛</span><span>ゆいしょ</span>
-  </button>
-  <button class="nav-item" data-filter="りいしょ" data-label="りいしょ">
-    <span class="nav-icon">🩷</span><span>りいしょ</span>
-  </button>
-  <button class="nav-item" data-filter="ういしょ" data-label="ういしょ">
-    <span class="nav-icon">🩵</span><span>ういしょ</span>
-  </button>
-  <button class="nav-item" data-filter="れいしょ" data-label="れいしょ">
-    <span class="nav-icon">💜</span><span>れいしょ</span>
-  </button>
-  <button class="nav-item" data-filter="よいしょ" data-label="よいしょ">
-    <span class="nav-icon">💚</span><span>よいしょ</span>
-  </button>
-  <button class="nav-item" data-filter="ないしょ" data-label="ないしょ">
-    <span class="nav-icon">🤍</span><span>ないしょ</span>
-  </button>
-</nav>
+<footer class="footer" id="footer">
+  <!-- SVGアイコンはJS側で生成 -->
+</footer>
 
-<!-- Modal -->
-<div class="modal-overlay" id="modal-overlay">
+<div class="overlay" id="overlay">
   <div class="modal" id="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-header">
-      <button class="modal-back" id="modal-back">←</button>
-      <div class="modal-title-wrap">
-        <div class="modal-chara-label" id="modal-chara-label"></div>
-        <div class="modal-code-title" id="modal-code-title"></div>
+    <div class="modal-pill"></div>
+    <div class="modal-top">
+      <button class="modal-back" id="modal-back">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="modal-titles">
+        <div class="modal-chara" id="m-chara"></div>
+        <div class="modal-name"  id="m-name"></div>
       </div>
     </div>
-    <div class="modal-img-wrap" id="modal-img-wrap"></div>
+    <div class="modal-card-wrap" id="m-img"></div>
     <div class="modal-meta">
-      <div class="modal-yomi" id="modal-yomi"></div>
-      <div class="modal-note" id="modal-note" style="display:none"></div>
+      <div class="modal-yomi" id="m-yomi"></div>
+      <div class="modal-note" id="m-note" style="display:none"></div>
     </div>
   </div>
 </div>
 
 <script>
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwiWgNu6Vcw9Gyk3UHxCS9bSomX9T8WeWpeRIJDM93D3aYwOoesz-QnY9EJdCMbsHOSetZFv7sIrIp/pub?output=csv";
-
-const COL = {
-  chara: "キャラ名",
-  code:  "コード名",
-  img:   "画像URL",
-  yomi:  "備考1",
-  note1: "備考2",
-  note2: "備考3",
-};
-
+const COL = { chara:"キャラ名", code:"コード名", img:"画像URL", yomi:"備考1", note1:"備考2", note2:"備考3" };
 const PAGE_SIZE = 20;
 
-let allData    = [];
-let activeFilter = null; // null = みんな
-let searchQ    = "";
-let currentPage = 1;
+// ── フッターナビ定義 ──
+const NAVS = [
+  { label:"みんな",   filter:null,      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+  { label:"ゆいしょ", filter:"ゆいしょ", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>` },
+  { label:"りいしょ", filter:"りいしょ", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>` },
+  { label:"ういしょ", filter:"ういしょ", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>` },
+  { label:"れいしょ", filter:"れいしょ", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` },
+  { label:"よいしょ", filter:"よいしょ", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>` },
+  { label:"ないしょ", filter:"ないしょ", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>` },
+];
 
-const gridEl      = document.getElementById("grid");
-const paginationEl= document.getElementById("pagination");
-const headerTitle = document.getElementById("header-title");
-const searchEl    = document.getElementById("search");
-const overlay     = document.getElementById("modal-overlay");
-
-// ── CSV ──
-function parseCSV(text) {
-  const rows = [];
-  let row = [], field = "", inQ = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i], n = text[i+1];
-    if (inQ) {
-      if (c==='"'&&n==='"'){field+='"';i++;}
-      else if(c==='"'){inQ=false;}
-      else{field+=c;}
-    } else {
-      if(c==='"'){inQ=true;}
-      else if(c===','){row.push(field);field="";}
-      else if(c==='\r'&&n==='\n'){row.push(field);rows.push(row);row=[];field="";i++;}
-      else if(c==='\n'||c==='\r'){row.push(field);rows.push(row);row=[];field="";}
-      else{field+=c;}
-    }
-  }
-  if(field||row.length){row.push(field);rows.push(row);}
-  return rows;
-}
-function csvToObjects(rows) {
-  if(rows.length<2) return [];
-  const headers = rows[0].map(h=>h.trim());
-  return rows.slice(1).filter(r=>r.some(c=>c.trim())).map(r=>{
-    const obj={};
-    headers.forEach((h,i)=>{obj[h]=(r[i]||"").trim();});
-    return obj;
-  });
-}
-
-// ── Fetch ──
-async function fetchData() {
-  showState("🌸","読み込み中…","");
-  const cacheKey="freca_v3", cacheTime="freca_t3", TTL=5*60*1000;
-  try {
-    const c=sessionStorage.getItem(cacheKey), t=sessionStorage.getItem(cacheTime);
-    if(c&&t&&Date.now()-Number(t)<TTL){allData=JSON.parse(c);render();return;}
-  } catch(e){}
-  try {
-    const res=await fetch(SHEET_CSV_URL,{cache:"no-store"});
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    allData=csvToObjects(parseCSV(await res.text()));
-    try{sessionStorage.setItem(cacheKey,JSON.stringify(allData));sessionStorage.setItem(cacheTime,String(Date.now()));}catch(e){}
-    render();
-  } catch(e) {
-    showState("⚠️","読み込みに失敗しました",`エラー: ${e.message}`);
-  }
-}
-
-// ── Filter + Paginate ──
-function getFiltered() {
-  const q = searchQ.toLowerCase();
-  return allData.filter(d => {
-    if (activeFilter !== null && d[COL.chara] !== activeFilter) return false;
-    if (!q) return true;
-    return (d[COL.code]||"").includes(q)||(d[COL.yomi]||"").includes(q);
-  });
-}
-
-function render() {
-  const filtered = getFiltered();
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  if (currentPage > totalPages) currentPage = 1;
-
-  const pageData = filtered.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
-
-  if (!pageData.length) {
-    showState("🔍","見つかりません","別のキーワードで試してください");
-    paginationEl.innerHTML = "";
-    return;
-  }
-
-  const frag = document.createDocumentFragment();
-  pageData.forEach(d => {
-    const card = document.createElement("div");
-    card.className = "card";
-    const imgURL = d[COL.img]||"";
-    const codeName = d[COL.code]||"";
-    card.innerHTML = `
-      <div class="card-img-wrap">
-        ${imgURL
-          ? `<img src="${esc(imgURL)}" alt="${esc(codeName)}" loading="lazy" decoding="async">`
-          : `<div class="card-placeholder">🌸</div>`}
-      </div>
-      <div class="card-body">
-        <div class="card-chara">${esc(d[COL.chara]||"")}</div>
-        <div class="card-name">${esc(codeName)}</div>
-      </div>`;
-    card.onclick = () => openModal(d);
-    frag.appendChild(card);
-  });
-  gridEl.innerHTML = "";
-  gridEl.appendChild(frag);
-
-  // Pagination
-  renderPagination(totalPages);
-}
-
-function renderPagination(totalPages) {
-  if (totalPages <= 1) { paginationEl.innerHTML=""; return; }
-  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?"disabled":""}>‹ 前</button>`;
-  html += `<span class="page-info">${currentPage} / ${totalPages}</span>`;
-  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?"disabled":""}>次 ›</button>`;
-  paginationEl.innerHTML = html;
-}
-
-window.goPage = function(p) {
-  currentPage = p;
-  render();
-  window.scrollTo({top:0, behavior:"smooth"});
-};
-
-function showState(icon, title, sub) {
-  gridEl.innerHTML = `<div class="state"><span class="icon">${icon}</span><strong>${esc(title)}</strong><br><span>${sub}</span></div>`;
-  paginationEl.innerHTML = "";
-}
-
-// ── Footer Nav ──
-document.querySelectorAll(".nav-item").forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    const f = btn.dataset.filter;
-    activeFilter = (f === "null") ? null : f;
-    headerTitle.textContent = btn.dataset.label;
-    searchEl.value = "";
-    searchQ = "";
-    currentPage = 1;
-    render();
-    window.scrollTo({top:0, behavior:"smooth"});
-  };
+// フッター生成
+const footerEl = document.getElementById("footer");
+NAVS.forEach((n, i) => {
+  const btn = document.createElement("button");
+  btn.className = "nav-btn" + (i===0?" active":"");
+  btn.dataset.i = i;
+  btn.innerHTML = n.icon + `<span>${n.label}</span>`;
+  btn.onclick = () => switchNav(i);
+  footerEl.appendChild(btn);
 });
 
-// ── Modal ──
-function openModal(d) {
-  document.getElementById("modal-chara-label").textContent = d[COL.chara]||"";
-  document.getElementById("modal-code-title").textContent  = d[COL.code]||"";
-  document.getElementById("modal-yomi").textContent = d[COL.yomi] ? "よみ："+d[COL.yomi] : "";
-  const note = [d[COL.note1],d[COL.note2]].filter(Boolean).join("　");
-  const noteEl = document.getElementById("modal-note");
-  noteEl.style.display = note?"block":"none";
-  noteEl.textContent = note;
-  const imgWrap = document.getElementById("modal-img-wrap");
-  const url = d[COL.img]||"";
-  imgWrap.innerHTML = url
-    ? `<img src="${esc(url)}" alt="${esc(d[COL.code]||"")}" loading="lazy">`
-    : `<div class="modal-placeholder">🌸</div>`;
-  overlay.classList.add("open");
-  document.body.style.overflow = "hidden";
-}
-function closeModal() {
-  overlay.classList.remove("open");
-  document.body.style.overflow = "";
-}
-document.getElementById("modal-back").onclick = closeModal;
-overlay.onclick = e => { if(e.target===overlay) closeModal(); };
+let allData = [], activeFilter = null, searchQ = "", currentPage = 1;
+const gridEl  = document.getElementById("grid");
+const pagEl   = document.getElementById("pagination");
+const titleEl = document.getElementById("header-title");
+const srchEl  = document.getElementById("search");
+const overlay = document.getElementById("overlay");
 
-let touchStartY = 0;
-document.getElementById("modal").addEventListener("touchstart", e=>{touchStartY=e.touches[0].clientY;},{passive:true});
-document.getElementById("modal").addEventListener("touchend",   e=>{if(e.changedTouches[0].clientY-touchStartY>60)closeModal();},{passive:true});
+function switchNav(i) {
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  footerEl.children[i].classList.add("active");
+  activeFilter = NAVS[i].filter;
+  titleEl.textContent = NAVS[i].label;
+  srchEl.value = ""; searchQ = ""; currentPage = 1;
+  render();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
 
-searchEl.addEventListener("input", e=>{searchQ=e.target.value;currentPage=1;render();});
+// CSV
+function parseCSV(t) {
+  const rows=[]; let row=[],f="",inQ=false;
+  for(let i=0;i<t.length;i++){
+    const c=t[i],n=t[i+1];
+    if(inQ){if(c==='"'&&n==='"'){f+='"';i++;}else if(c==='"'){inQ=false;}else{f+=c;}}
+    else{if(c==='"'){inQ=true;}else if(c===','){row.push(f);f="";}
+    else if(c==='\r'&&n==='\n'){row.push(f);rows.push(row);row=[];f="";i++;}
+    else if(c==='\n'||c==='\r'){row.push(f);rows.push(row);row=[];f="";}
+    else{f+=c;}}
+  }
+  if(f||row.length){row.push(f);rows.push(row);}
+  return rows;
+}
+function toObj(rows){
+  if(rows.length<2)return[];
+  const h=rows[0].map(x=>x.trim());
+  return rows.slice(1).filter(r=>r.some(c=>c.trim())).map(r=>{
+    const o={};h.forEach((k,i)=>{o[k]=(r[i]||"").trim();});return o;
+  });
+}
+
+async function fetchData(){
+  showState("🌸","読み込み中…");
+  const ck="freca_v4",ct="freca_t4",TTL=5*60*1000;
+  try{const c=sessionStorage.getItem(ck),t=sessionStorage.getItem(ct);
+    if(c&&t&&Date.now()-Number(t)<TTL){allData=JSON.parse(c);render();return;}}catch(e){}
+  try{
+    const res=await fetch(SHEET_CSV_URL,{cache:"no-store"});
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    allData=toObj(parseCSV(await res.text()));
+    try{sessionStorage.setItem(ck,JSON.stringify(allData));sessionStorage.setItem(ct,String(Date.now()));}catch(e){}
+    render();
+  }catch(e){showState("⚠️","読み込みに失敗しました");}
+}
+
+function getFiltered(){
+  const q=searchQ.toLowerCase();
+  return allData.filter(d=>{
+    if(activeFilter!==null&&d[COL.chara]!==activeFilter)return false;
+    if(!q)return true;
+    return(d[COL.code]||"").includes(q)||(d[COL.yomi]||"").includes(q);
+  });
+}
+
+function render(){
+  const list=getFiltered();
+  const total=Math.max(1,Math.ceil(list.length/PAGE_SIZE));
+  if(currentPage>total)currentPage=1;
+  const page=list.slice((currentPage-1)*PAGE_SIZE,currentPage*PAGE_SIZE);
+  if(!page.length){showState("🔍","見つかりません");return;}
+
+  const frag=document.createDocumentFragment();
+  page.forEach(d=>{
+    const card=document.createElement("div");
+    card.className="card";
+    const url=d[COL.img]||"", name=d[COL.code]||"";
+    card.innerHTML=
+      `<div class="card-img">${url
+        ?`<img src="${esc(url)}" alt="${esc(name)}" loading="lazy" decoding="async">`
+        :`<div class="no-img">🌸</div>`}</div>`+
+      `<div class="card-body">`+
+        `<div class="card-chara">${esc(d[COL.chara]||"")}</div>`+
+        `<div class="card-name">${esc(name)}</div>`+
+      `</div>`;
+    card.onclick=()=>openModal(d);
+    frag.appendChild(card);
+  });
+  gridEl.innerHTML=""; gridEl.appendChild(frag);
+  renderPag(total);
+}
+
+function renderPag(total){
+  if(total<=1){pagEl.innerHTML="";return;}
+  pagEl.innerHTML=
+    `<button class="pg-btn" onclick="gp(${currentPage-1})" ${currentPage===1?"disabled":""}>‹ 前</button>`+
+    `<span class="pg-info">${currentPage} / ${total}</span>`+
+    `<button class="pg-btn" onclick="gp(${currentPage+1})" ${currentPage===total?"disabled":""}>次 ›</button>`;
+}
+window.gp=p=>{currentPage=p;render();window.scrollTo({top:0,behavior:"smooth"});};
+
+function showState(ico,msg){
+  gridEl.innerHTML=`<div class="state"><span class="ico">${ico}</span>${esc(msg)}</div>`;
+  pagEl.innerHTML="";
+}
+
+// Modal
+function openModal(d){
+  document.getElementById("m-chara").textContent=d[COL.chara]||"";
+  document.getElementById("m-name").textContent=d[COL.code]||"";
+  document.getElementById("m-yomi").textContent=d[COL.yomi]?"よみ："+d[COL.yomi]:"";
+  const note=[d[COL.note1],d[COL.note2]].filter(Boolean).join("　");
+  const ne=document.getElementById("m-note");
+  ne.style.display=note?"block":"none"; ne.textContent=note;
+  const iw=document.getElementById("m-img");
+  const url=d[COL.img]||"";
+  iw.innerHTML=url?`<img src="${esc(url)}" alt="${esc(d[COL.code]||"")}" loading="lazy">`:`<div class="no-img">🌸</div>`;
+  overlay.classList.add("open"); document.body.style.overflow="hidden";
+}
+function closeModal(){overlay.classList.remove("open");document.body.style.overflow="";}
+document.getElementById("modal-back").onclick=closeModal;
+overlay.onclick=e=>{if(e.target===overlay)closeModal();};
+
+let ty=0;
+document.getElementById("modal").addEventListener("touchstart",e=>{ty=e.touches[0].clientY;},{passive:true});
+document.getElementById("modal").addEventListener("touchend",e=>{if(e.changedTouches[0].clientY-ty>60)closeModal();},{passive:true});
+
+srchEl.addEventListener("input",e=>{searchQ=e.target.value;currentPage=1;render();});
 document.getElementById("reload-btn").onclick=()=>{
-  sessionStorage.removeItem("freca_v3");
-  sessionStorage.removeItem("freca_t3");
-  fetchData();
+  sessionStorage.removeItem("freca_v4");sessionStorage.removeItem("freca_t4");fetchData();
 };
 
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
