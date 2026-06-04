@@ -61,8 +61,6 @@
     transition: transform 0.13s;
   }
   .card:active { transform: scale(0.96); }
-
-  /* カード画像：上余白を詰めて絵をアップで */
   .card-img {
     width: 100%; padding-top: 105%;
     position: relative; overflow: hidden;
@@ -90,16 +88,21 @@
   /* Pagination */
   .pagination {
     display: flex; align-items: center; justify-content: center;
-    gap: 8px; padding: 12px 16px 16px;
+    gap: 4px; padding: 12px 16px 16px; flex-wrap: wrap;
   }
   .pg-btn {
     background: var(--white); border: 1.5px solid var(--border);
-    border-radius: 20px; padding: 7px 18px; font-size: 13px; font-weight: 500;
-    font-family: inherit; color: var(--text-sub); cursor: pointer;
+    border-radius: 50%; width: 36px; height: 36px;
+    font-size: 13px; font-weight: 500; font-family: inherit;
+    color: var(--text-sub); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.13s, color 0.13s;
   }
-  .pg-btn:not(:disabled):active { background: var(--pink-bg); }
+  .pg-btn.active { background: var(--pink); border-color: var(--pink); color: #fff; font-weight: 700; }
+  .pg-btn.arrow { border-radius: 50%; font-size: 16px; }
+  .pg-btn:not(:disabled):not(.active):active { background: var(--pink-bg); }
   .pg-btn:disabled { opacity: 0.3; cursor: default; }
-  .pg-info { font-size: 13px; color: var(--text-sub); min-width: 56px; text-align: center; }
+  .pg-ellipsis { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: var(--text-sub); font-size: 13px; }
 
   .state {
     grid-column: 1/-1; padding: 56px 16px; text-align: center;
@@ -129,59 +132,41 @@
     height: 2.5px; background: var(--pink); border-radius: 0 0 3px 3px;
   }
 
-  /* Modal：中央表示・大きめ */
+  /* Modal：中央・画像のみ・×ボタン */
   .overlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.52); z-index: 100;
+    background: rgba(0,0,0,0.72); z-index: 100;
     align-items: center; justify-content: center; padding: 16px;
   }
   .overlay.open { display: flex; }
   .modal {
-    background: var(--white); border-radius: 22px;
-    width: 100%; max-width: 400px; max-height: 90vh;
-    overflow-y: auto; animation: pop .2s ease-out;
+    position: relative;
+    width: min(320px, 82vw);
+    animation: pop .2s ease-out;
   }
   @keyframes pop {
-    from { transform: scale(0.92); opacity: 0; }
+    from { transform: scale(0.88); opacity: 0; }
     to   { transform: scale(1);    opacity: 1; }
   }
-  .modal-pill {
-    width: 38px; height: 4px; background: #e0e0e0;
-    border-radius: 99px; margin: 12px auto 0;
-  }
-  .modal-top { display: flex; align-items: center; gap: 10px; padding: 14px 16px 0; }
-  .modal-back {
-    width: 36px; height: 36px; border-radius: 50%; border: none;
-    background: var(--pink-bg); cursor: pointer;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .modal-back svg { width: 18px; height: 18px; stroke: var(--pink-dark); fill: none; stroke-width: 2.2; stroke-linecap: round; }
-  .modal-titles { flex: 1; min-width: 0; }
-  .modal-chara { font-size: 11px; font-weight: 700; color: var(--pink); letter-spacing: 0.06em; }
-  .modal-name  { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.35; margin-top: 2px; }
-
-  /* モーダル画像：大きめに */
-  .modal-card-wrap {
-    margin: 16px auto 0;
-    width: min(280px, 75vw);
-    aspect-ratio: 2/3;
-    border-radius: 14px; overflow: hidden;
-    box-shadow: 0 4px 24px rgba(240,98,146,0.22);
+  .modal-img-wrap {
+    width: 100%; aspect-ratio: 2/3;
+    border-radius: 18px; overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
     background: linear-gradient(160deg,#fce4ec,#e8eaf6);
   }
-  .modal-card-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .modal-card-wrap .no-img {
-    width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:60px;
+  .modal-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .modal-img-wrap .no-img {
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:72px;
   }
-  .modal-meta { padding: 14px 20px 28px; }
-  .modal-yomi { font-size: 13px; color: var(--text-sub); margin-top: 4px; }
-  .modal-note {
-    margin-top: 10px; font-size: 13px; color: var(--text-sub);
-    background: var(--pink-bg); border-radius: 10px; padding: 10px 14px; line-height: 1.65;
+  .modal-close {
+    position: absolute; top: -14px; right: -14px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #fff; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    font-size: 18px; color: #555;
   }
-
-  /* デバッグ表示 */
-  #debug { font-size:10px; color:#aaa; padding: 4px 12px; display:none; }
+  .modal-close:active { background: #eee; }
 </style>
 </head>
 <body>
@@ -203,8 +188,6 @@
   </div>
 </header>
 
-<div id="debug"></div>
-
 <main>
   <div class="grid" id="grid">
     <div class="state"><span class="ico">🌸</span>読み込み中…</div>
@@ -214,42 +197,34 @@
 
 <footer class="footer" id="footer"></footer>
 
+<!-- Modal：画像＋×のみ -->
 <div class="overlay" id="overlay">
   <div class="modal" id="modal">
-    <div class="modal-pill"></div>
-    <div class="modal-top">
-      <button class="modal-back" id="modal-back">
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div class="modal-titles">
-        <div class="modal-chara" id="m-chara"></div>
-        <div class="modal-name"  id="m-name"></div>
-      </div>
-    </div>
-    <div class="modal-card-wrap" id="m-img"></div>
-    <div class="modal-meta">
-      <div class="modal-yomi" id="m-yomi"></div>
-      <div class="modal-note" id="m-note" style="display:none"></div>
-    </div>
+    <button class="modal-close" id="modal-close">✕</button>
+    <div class="modal-img-wrap" id="m-img"></div>
   </div>
 </div>
 
 <script>
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwiWgNu6Vcw9Gyk3UHxCS9bSomX9T8WeWpeRIJDM93D3aYwOoesz-QnY9EJdCMbsHOSetZFv7sIrIp/pub?output=csv";
 const PAGE_SIZE = 20;
-
-// 列インデックス（0始まり）- ヘッダー名に頼らず列番号で直接取得
-// A=0:キャラ名, B=1:コード名, C=2:画像URL, D=3:備考1, E=4:備考2, F=5:備考3
 const CI = { chara:0, code:1, img:2, yomi:3, note1:4, note2:5 };
 
 const NAVS = [
-  { label:"みんな",   filter:null       , icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
-  { label:"ゆいしょ", filter:"ゆいしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>` },
-  { label:"りいしょ", filter:"りいしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>` },
-  { label:"ういしょ", filter:"ういしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>` },
-  { label:"れいしょ", filter:"れいしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` },
-  { label:"よいしょ", filter:"よいしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>` },
-  { label:"ないしょ", filter:"ないしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>` },
+  { label:"みんな",   filter:null,
+    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+  { label:"ゆいしょ", filter:"ゆいしょ",
+    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>` },
+  { label:"りいしょ", filter:"りいしょ",
+    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>` },
+  { label:"ういしょ", filter:"ういしょ",
+    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>` },
+  { label:"れいしょ", filter:"れいしょ",
+    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` },
+  { label:"よいしょ", filter:"よいしょ",
+    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53A4.48 4.48 0 0 0 16 2a4.48 4.48 0 0 0-4.47 5.17A12.73 12.73 0 0 1 2.64 3.16s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>` },
+  { label:"ないしょ", filter:"ないしょ",
+    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>` },
 ];
 
 const footerEl = document.getElementById("footer");
@@ -278,24 +253,14 @@ function switchNav(i){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
-// カタカナ→ひらがな変換
-function toHira(str){
-  return str.replace(/[\u30A1-\u30F6]/g, c => String.fromCharCode(c.charCodeAt(0)-0x60));
-}
-// ひらがな→カタカナ変換
-function toKata(str){
-  return str.replace(/[\u3041-\u3096]/g, c => String.fromCharCode(c.charCodeAt(0)+0x60));
-}
-// 検索用：入力をひらがな・カタカナ両方にマッチ
-function matchSearch(target, q){
-  if(!q) return true;
-  const t = target.toLowerCase();
-  const qH = toHira(q.toLowerCase());
-  const qK = toKata(q.toLowerCase());
-  return t.includes(q.toLowerCase()) || t.includes(qH) || t.includes(qK);
+function toHira(s){ return s.replace(/[\u30A1-\u30F6]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60)); }
+function toKata(s){ return s.replace(/[\u3041-\u3096]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60)); }
+function matchSearch(target,q){
+  if(!q)return true;
+  const t=target.toLowerCase();
+  return t.includes(q)||t.includes(toHira(q))||t.includes(toKata(q));
 }
 
-// CSV parse（列インデックスベース）
 function parseCSV(text){
   const rows=[]; let row=[],f="",inQ=false;
   for(let i=0;i<text.length;i++){
@@ -309,23 +274,17 @@ function parseCSV(text){
   if(f||row.length){row.push(f);rows.push(row);}
   return rows;
 }
-
 function rowsToData(rows){
-  // 1行目はヘッダー、2行目以降がデータ
-  // 列インデックスで直接取得するので列名に依存しない
   return rows.slice(1).filter(r=>r.some(c=>(c||"").trim())).map(r=>({
-    chara: (r[CI.chara]||"").trim(),
-    code:  (r[CI.code] ||"").trim(),
-    img:   (r[CI.img]  ||"").trim(),
-    yomi:  (r[CI.yomi] ||"").trim(),
-    note1: (r[CI.note1]||"").trim(),
-    note2: (r[CI.note2]||"").trim(),
+    chara:(r[CI.chara]||"").trim(), code:(r[CI.code]||"").trim(),
+    img:(r[CI.img]||"").trim(),     yomi:(r[CI.yomi]||"").trim(),
+    note1:(r[CI.note1]||"").trim(), note2:(r[CI.note2]||"").trim(),
   }));
 }
 
 async function fetchData(){
   showState("🌸","読み込み中…");
-  const ck="freca_v6",ct="freca_t6",TTL=5*60*1000;
+  const ck="freca_v7",ct="freca_t7",TTL=5*60*1000;
   try{
     const c=sessionStorage.getItem(ck),t=sessionStorage.getItem(ct);
     if(c&&t&&Date.now()-Number(t)<TTL){allData=JSON.parse(c);render();return;}
@@ -333,28 +292,27 @@ async function fetchData(){
   try{
     const res=await fetch(SHEET_CSV_URL,{cache:"no-store"});
     if(!res.ok)throw new Error("HTTP "+res.status);
-    const rows=parseCSV(await res.text());
-    allData=rowsToData(rows);
+    allData=rowsToData(parseCSV(await res.text()));
     try{sessionStorage.setItem(ck,JSON.stringify(allData));sessionStorage.setItem(ct,String(Date.now()));}catch(e){}
     render();
   }catch(e){showState("⚠️","読み込みに失敗しました："+e.message);}
 }
 
 function getFiltered(){
+  const q=searchQ.toLowerCase();
   return allData.filter(d=>{
-    // タブフィルター（現在のタブ内のみ）
-    if(activeFilter!==null && d.chara!==activeFilter) return false;
-    if(!searchQ) return true;
-    // コード名・よみ両方をひらかな/カタカナ両対応で検索
-    return matchSearch(d.code, searchQ) || matchSearch(d.yomi, searchQ);
+    if(activeFilter!==null&&d.chara!==activeFilter)return false;
+    if(!q)return true;
+    return matchSearch(d.code,q)||matchSearch(d.yomi,q);
   });
 }
 
 function render(){
-  const list=getFiltered();
+  // 逆順表示
+  const list=[...getFiltered()].reverse();
   const total=Math.max(1,Math.ceil(list.length/PAGE_SIZE));
-  if(currentPage>total) currentPage=1;
-  const page=list.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+  if(currentPage>total)currentPage=1;
+  const page=list.slice((currentPage-1)*PAGE_SIZE,currentPage*PAGE_SIZE);
   if(!page.length){showState("🔍","見つかりません");return;}
 
   const frag=document.createDocumentFragment();
@@ -379,10 +337,35 @@ function render(){
 
 function renderPag(total){
   if(total<=1){pagEl.innerHTML="";return;}
-  pagEl.innerHTML=
-    `<button class="pg-btn" onclick="gp(${currentPage-1})" ${currentPage===1?"disabled":""}>‹ 前</button>`+
-    `<span class="pg-info">${currentPage} / ${total}</span>`+
-    `<button class="pg-btn" onclick="gp(${currentPage+1})" ${currentPage===total?"disabled":""}>次 ›</button>`;
+  const p=currentPage;
+  let html="";
+
+  // 前へ
+  html+=`<button class="pg-btn arrow" onclick="gp(${p-1})" ${p===1?"disabled":""}>‹</button>`;
+
+  // ページ番号ロジック
+  const pages=[];
+  if(total<=7){
+    for(let i=1;i<=total;i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if(p>3) pages.push("...");
+    for(let i=Math.max(2,p-1);i<=Math.min(total-1,p+1);i++) pages.push(i);
+    if(p<total-2) pages.push("...");
+    pages.push(total);
+  }
+
+  pages.forEach(v=>{
+    if(v==="..."){
+      html+=`<span class="pg-ellipsis">…</span>`;
+    } else {
+      html+=`<button class="pg-btn${v===p?" active":""}" onclick="gp(${v})">${v}</button>`;
+    }
+  });
+
+  // 次へ
+  html+=`<button class="pg-btn arrow" onclick="gp(${p+1})" ${p===total?"disabled":""}>›</button>`;
+  pagEl.innerHTML=html;
 }
 window.gp=p=>{currentPage=p;render();window.scrollTo({top:0,behavior:"smooth"});};
 
@@ -392,12 +375,6 @@ function showState(ico,msg){
 }
 
 function openModal(d){
-  document.getElementById("m-chara").textContent=d.chara;
-  document.getElementById("m-name").textContent=d.code;
-  document.getElementById("m-yomi").textContent=d.yomi?"よみ："+d.yomi:"";
-  const note=[d.note1,d.note2].filter(Boolean).join("　");
-  const ne=document.getElementById("m-note");
-  ne.style.display=note?"block":"none"; ne.textContent=note;
   const iw=document.getElementById("m-img");
   iw.innerHTML=d.img
     ?`<img src="${esc(d.img)}" alt="${esc(d.code)}" loading="lazy">`
@@ -409,13 +386,13 @@ function closeModal(){
   overlay.classList.remove("open");
   document.body.style.overflow="";
 }
-document.getElementById("modal-back").onclick=closeModal;
+document.getElementById("modal-close").onclick=closeModal;
 overlay.onclick=e=>{if(e.target===overlay)closeModal();};
 
 srchEl.addEventListener("input",e=>{searchQ=e.target.value;currentPage=1;render();});
 document.getElementById("reload-btn").onclick=()=>{
-  sessionStorage.removeItem("freca_v6");
-  sessionStorage.removeItem("freca_t6");
+  sessionStorage.removeItem("freca_v7");
+  sessionStorage.removeItem("freca_t7");
   fetchData();
 };
 
