@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>フレカ管理</title>
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="フレカ管理">
+<meta name="theme-color" content="#f9b8d4">
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -72,7 +77,7 @@
   }
   .card-img .no-img {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(145deg, #fde8f3, #e8e4f8); font-size: 36px;
+    background: linear-gradient(145deg, #fde8f3, #e8e4f8); display:flex;align-items:center;justify-content:center;
   }
   .card-body { padding: 8px 10px 11px; border-top: 1px solid var(--border); }
   .card-chara {
@@ -107,7 +112,7 @@
     grid-column: 1/-1; padding: 56px 16px; text-align: center;
     color: var(--text-sub); font-size: 14px; line-height: 2;
   }
-  .state .ico { font-size: 44px; display: block; margin-bottom: 10px; }
+  .state .ico { display: block; margin-bottom: 10px; }
 
   /* Footer Nav */
   .footer {
@@ -199,7 +204,7 @@
 
 <main>
   <div class="grid" id="grid">
-    <div class="state"><span class="ico">🌸</span>読み込み中…</div>
+    <div class="state"><span class="ico"><svg width="36" height="36" viewBox="0 0 24 24" fill="#f9b8d4" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></span>読み込み中…</div>
   </div>
   <div class="pagination" id="pagination"></div>
 </main>
@@ -288,7 +293,7 @@ function rowsToData(rows){
   const updEl=document.getElementById("header-updated");
   if(rows.length>0){
     const updated=(rows[0][6]||"").trim();
-    if(updated){updEl.textContent="更新: "+updated;updEl.style.display="inline-block";}
+    if(updated){updEl.textContent="最終更新: "+updated;updEl.style.display="inline-block";}
   }
   return rows.slice(1).filter(r=>r.some(c=>(c||"").trim())).map(r=>({
     chara:(r[CI.chara]||"").trim(), code:(r[CI.code]||"").trim(),
@@ -337,7 +342,7 @@ function render(){
     card.innerHTML=
       `<div class="card-img">${d.img
         ?`<img src="${esc(d.img)}" alt="${esc(d.code)}" loading="lazy" decoding="async">`
-        :`<div class="no-img">🌸</div>`}</div>`+
+        :`<div class="no-img"><svg width="22" height="22" viewBox="0 0 24 24" fill="#f9b8d4" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>`}</div>`+
       `<div class="card-body">`+
         `<div class="card-chara">${esc(d.chara)}</div>`+
         `<div class="card-name">${esc(d.code)}</div>`+
@@ -393,7 +398,7 @@ function openModal(d){
   const iw=document.getElementById("m-img");
   iw.innerHTML=d.img
     ?`<img src="${esc(d.img)}" alt="${esc(d.code)}" loading="lazy">`
-    :`<div class="no-img">🌸</div>`;
+    :`<div class="no-img"><svg width="22" height="22" viewBox="0 0 24 24" fill="#f9b8d4" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>`;
   overlay.classList.add("open");
   document.body.style.overflow="hidden";
 }
