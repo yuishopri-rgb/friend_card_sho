@@ -36,23 +36,17 @@
     padding: 14px 16px 12px;
     position: sticky; top: 0; z-index: 20;
   }
-  .header-top {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
-  }
-  .header-title {
-    flex: 1; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 0.02em;
-  }
+  .header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .header-title { flex: 1; font-size: 20px; font-weight: 700; color: #fff; }
   .reload-btn {
     background: rgba(255,255,255,0.22); border: none; border-radius: 50%;
     width: 36px; height: 36px; cursor: pointer; color: #fff;
     display: flex; align-items: center; justify-content: center;
   }
   .reload-btn:active { background: rgba(255,255,255,0.4); }
-
   .search-box {
     display: flex; align-items: center; gap: 8px;
-    background: rgba(255,255,255,0.9); border-radius: 22px;
-    padding: 8px 14px;
+    background: rgba(255,255,255,0.9); border-radius: 22px; padding: 8px 14px;
   }
   .search-box svg { flex-shrink: 0; opacity: 0.45; }
   .search-box input {
@@ -70,49 +64,38 @@
   }
 
   .card {
-    background: var(--white);
-    border-radius: var(--radius);
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow: 0 1px 4px rgba(240,98,146,0.10);
-    transition: transform 0.13s, box-shadow 0.13s;
+    background: var(--white); border-radius: var(--radius); overflow: hidden;
+    cursor: pointer; box-shadow: 0 1px 4px rgba(240,98,146,0.10);
+    transition: transform 0.13s;
   }
-  .card:active { transform: scale(0.96); box-shadow: 0 1px 2px rgba(240,98,146,0.08); }
+  .card:active { transform: scale(0.96); }
 
-  /* 画像エリア：カードの上 55% だけ見せる（絵の部分） */
+  /* 画像エリア：上余白を詰めて絵をアップで */
   .card-img {
-    width: 100%;
-    padding-top: 72%;   /* 表示高さ */
-    position: relative;
-    overflow: hidden;
+    width: 100%; padding-top: 105%;
+    position: relative; overflow: hidden;
     background: linear-gradient(160deg, #fce4ec 0%, #e8eaf6 100%);
   }
   .card-img img {
     position: absolute;
-    top: 0; left: 0; width: 100%;
-    /* カード全体は縦2:3比率なので height=150%幅 → 上部だけ見せる */
-    height: 210%;
-    object-fit: cover;
-    object-position: top center;
-    display: block;
+    top: -10%; left: 0; width: 100%;
+    height: 200%;
+    object-fit: cover; object-position: top center; display: block;
   }
   .card-img .no-img {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 36px;
+    background: linear-gradient(145deg, #fce7f3, #ede9fe); font-size: 36px;
   }
 
-  .card-body {
-    padding: 8px 10px 10px;
-    border-top: 1px solid var(--border);
-  }
+  .card-body { padding: 9px 10px 11px; border-top: 1px solid var(--border); }
+  .card-meta { display: flex; align-items: baseline; gap: 5px; flex-wrap: wrap; }
   .card-chara {
-    font-size: 10px; font-weight: 700;
-    color: var(--pink); letter-spacing: 0.06em; margin-bottom: 3px;
+    font-size: 12px; font-weight: 700; color: var(--pink);
+    letter-spacing: 0.04em; white-space: nowrap; flex-shrink: 0;
   }
   .card-name {
-    font-size: 12px; font-weight: 500; color: var(--text);
-    line-height: 1.45;
+    font-size: 12px; font-weight: 500; color: var(--text); line-height: 1.45;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
 
@@ -126,9 +109,8 @@
     border-radius: 20px; padding: 7px 18px;
     font-size: 13px; font-weight: 500; font-family: inherit;
     color: var(--text-sub); cursor: pointer;
-    transition: background 0.13s, color 0.13s;
   }
-  .pg-btn:not(:disabled):hover { background: var(--pink-bg); color: var(--pink-dark); }
+  .pg-btn:not(:disabled):active { background: var(--pink-bg); }
   .pg-btn:disabled { opacity: 0.3; cursor: default; }
   .pg-info { font-size: 13px; color: var(--text-sub); min-width: 56px; text-align: center; }
 
@@ -141,45 +123,42 @@
   /* ── Footer Nav ── */
   .footer {
     position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-    width: 100%; max-width: 480px;
-    height: var(--footer-h);
-    background: var(--white);
-    border-top: 1px solid #f8bbd0;
+    width: 100%; max-width: 480px; height: var(--footer-h);
+    background: var(--white); border-top: 1px solid #f8bbd0;
     display: flex; z-index: 30;
   }
   .nav-btn {
     flex: 1; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: 3px; border: none; background: none;
-    cursor: pointer; font-family: inherit;
-    color: #bdbdbd; font-size: 10px; font-weight: 500;
-    padding: 6px 2px;
-    transition: color 0.15s;
-    position: relative;
+    gap: 3px; border: none; background: none; cursor: pointer;
+    font-family: inherit; color: #bdbdbd; font-size: 10px; font-weight: 500;
+    padding: 6px 2px; transition: color 0.15s; position: relative;
   }
-  .nav-btn svg { width: 24px; height: 24px; transition: transform 0.15s; }
+  .nav-btn svg { width: 22px; height: 22px; transition: transform 0.15s; }
   .nav-btn.active { color: var(--pink); }
   .nav-btn.active svg { transform: scale(1.15); }
   .nav-btn.active::after {
-    content: '';
-    position: absolute; top: 0; left: 20%; right: 20%; height: 2.5px;
-    background: var(--pink); border-radius: 0 0 3px 3px;
+    content: ''; position: absolute; top: 0; left: 20%; right: 20%;
+    height: 2.5px; background: var(--pink); border-radius: 0 0 3px 3px;
   }
 
-  /* ── Modal ── */
+  /* ── Modal（中央表示） ── */
   .overlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.48); z-index: 100;
-    align-items: flex-end; justify-content: center;
+    background: rgba(0,0,0,0.52); z-index: 100;
+    align-items: center; justify-content: center;
+    padding: 20px;
   }
   .overlay.open { display: flex; }
   .modal {
-    background: var(--white); border-radius: 22px 22px 0 0;
-    width: 100%; max-width: 480px; max-height: 90vh;
-    overflow-y: auto; animation: up .2s ease-out;
+    background: var(--white); border-radius: 22px;
+    width: 100%; max-width: 360px; max-height: 88vh;
+    overflow-y: auto; animation: pop .2s ease-out;
   }
-  @keyframes up { from{transform:translateY(24px);opacity:0} to{transform:translateY(0);opacity:1} }
-
+  @keyframes pop {
+    from { transform: scale(0.92); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
   .modal-pill {
     width: 38px; height: 4px; background: #e0e0e0;
     border-radius: 99px; margin: 12px auto 0;
@@ -190,28 +169,26 @@
   .modal-back {
     width: 36px; height: 36px; border-radius: 50%;
     border: none; background: var(--pink-bg); cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .modal-back svg { width: 18px; height: 18px; stroke: var(--pink-dark); fill: none; stroke-width: 2.2; stroke-linecap: round; }
   .modal-titles { flex: 1; min-width: 0; }
   .modal-chara { font-size: 11px; font-weight: 700; color: var(--pink); letter-spacing: 0.06em; }
-  .modal-name  { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.3; margin-top: 2px; }
+  .modal-name  { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.35; margin-top: 2px; }
 
   .modal-card-wrap {
     margin: 18px auto 0;
-    width: min(220px, 60vw);
+    width: min(200px, 55vw);
     aspect-ratio: 2/3;
-    border-radius: 14px; overflow: hidden;
+    border-radius: 12px; overflow: hidden;
     box-shadow: 0 4px 20px rgba(240,98,146,0.18);
     background: linear-gradient(160deg,#fce4ec,#e8eaf6);
   }
   .modal-card-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .modal-card-wrap .no-img {
-    width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:60px;
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:56px;
   }
-
-  .modal-meta { padding: 14px 20px 32px; }
+  .modal-meta { padding: 14px 20px 28px; }
   .modal-yomi { font-size: 13px; color: var(--text-sub); margin-top: 4px; }
   .modal-note {
     margin-top: 10px; font-size: 13px; color: var(--text-sub);
@@ -245,9 +222,7 @@
   <div class="pagination" id="pagination"></div>
 </main>
 
-<footer class="footer" id="footer">
-  <!-- SVGアイコンはJS側で生成 -->
-</footer>
+<footer class="footer" id="footer"></footer>
 
 <div class="overlay" id="overlay">
   <div class="modal" id="modal">
@@ -274,18 +249,16 @@ const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwiWgNu6
 const COL = { chara:"キャラ名", code:"コード名", img:"画像URL", yomi:"備考1", note1:"備考2", note2:"備考3" };
 const PAGE_SIZE = 20;
 
-// ── フッターナビ定義 ──
 const NAVS = [
-  { label:"みんな",   filter:null,      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
-  { label:"ゆいしょ", filter:"ゆいしょ", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>` },
-  { label:"りいしょ", filter:"りいしょ", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>` },
-  { label:"ういしょ", filter:"ういしょ", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>` },
-  { label:"れいしょ", filter:"れいしょ", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` },
-  { label:"よいしょ", filter:"よいしょ", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>` },
-  { label:"ないしょ", filter:"ないしょ", icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>` },
+  { label:"みんな",   filter:null,       icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+  { label:"ゆいしょ", filter:"ゆいしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>` },
+  { label:"りいしょ", filter:"りいしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>` },
+  { label:"ういしょ", filter:"ういしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>` },
+  { label:"れいしょ", filter:"れいしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` },
+  { label:"よいしょ", filter:"よいしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>` },
+  { label:"ないしょ", filter:"ないしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>` },
 ];
 
-// フッター生成
 const footerEl = document.getElementById("footer");
 NAVS.forEach((n, i) => {
   const btn = document.createElement("button");
@@ -296,25 +269,24 @@ NAVS.forEach((n, i) => {
   footerEl.appendChild(btn);
 });
 
-let allData = [], activeFilter = null, searchQ = "", currentPage = 1;
-const gridEl  = document.getElementById("grid");
-const pagEl   = document.getElementById("pagination");
-const titleEl = document.getElementById("header-title");
-const srchEl  = document.getElementById("search");
-const overlay = document.getElementById("overlay");
+let allData=[], activeFilter=null, searchQ="", currentPage=1;
+const gridEl=document.getElementById("grid");
+const pagEl=document.getElementById("pagination");
+const titleEl=document.getElementById("header-title");
+const srchEl=document.getElementById("search");
+const overlay=document.getElementById("overlay");
 
-function switchNav(i) {
+function switchNav(i){
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
   footerEl.children[i].classList.add("active");
-  activeFilter = NAVS[i].filter;
-  titleEl.textContent = NAVS[i].label;
-  srchEl.value = ""; searchQ = ""; currentPage = 1;
+  activeFilter=NAVS[i].filter;
+  titleEl.textContent=NAVS[i].label;
+  srchEl.value=""; searchQ=""; currentPage=1;
   render();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
-// CSV
-function parseCSV(t) {
+function parseCSV(t){
   const rows=[]; let row=[],f="",inQ=false;
   for(let i=0;i<t.length;i++){
     const c=t[i],n=t[i+1];
@@ -337,7 +309,7 @@ function toObj(rows){
 
 async function fetchData(){
   showState("🌸","読み込み中…");
-  const ck="freca_v4",ct="freca_t4",TTL=5*60*1000;
+  const ck="freca_v5",ct="freca_t5",TTL=5*60*1000;
   try{const c=sessionStorage.getItem(ck),t=sessionStorage.getItem(ct);
     if(c&&t&&Date.now()-Number(t)<TTL){allData=JSON.parse(c);render();return;}}catch(e){}
   try{
@@ -369,15 +341,15 @@ function render(){
   page.forEach(d=>{
     const card=document.createElement("div");
     card.className="card";
-    const url=d[COL.img]||"", name=d[COL.code]||"";
+    const url=d[COL.img]||"", name=d[COL.code]||"", chara=d[COL.chara]||"";
     card.innerHTML=
       `<div class="card-img">${url
         ?`<img src="${esc(url)}" alt="${esc(name)}" loading="lazy" decoding="async">`
         :`<div class="no-img">🌸</div>`}</div>`+
-      `<div class="card-body">`+
-        `<div class="card-chara">${esc(d[COL.chara]||"")}</div>`+
-        `<div class="card-name">${esc(name)}</div>`+
-      `</div>`;
+      `<div class="card-body"><div class="card-meta">`+
+        `<span class="card-chara">${esc(chara)}</span>`+
+        `<span class="card-name">${esc(name)}</span>`+
+      `</div></div>`;
     card.onclick=()=>openModal(d);
     frag.appendChild(card);
   });
@@ -399,7 +371,6 @@ function showState(ico,msg){
   pagEl.innerHTML="";
 }
 
-// Modal
 function openModal(d){
   document.getElementById("m-chara").textContent=d[COL.chara]||"";
   document.getElementById("m-name").textContent=d[COL.code]||"";
@@ -416,13 +387,9 @@ function closeModal(){overlay.classList.remove("open");document.body.style.overf
 document.getElementById("modal-back").onclick=closeModal;
 overlay.onclick=e=>{if(e.target===overlay)closeModal();};
 
-let ty=0;
-document.getElementById("modal").addEventListener("touchstart",e=>{ty=e.touches[0].clientY;},{passive:true});
-document.getElementById("modal").addEventListener("touchend",e=>{if(e.changedTouches[0].clientY-ty>60)closeModal();},{passive:true});
-
 srchEl.addEventListener("input",e=>{searchQ=e.target.value;currentPage=1;render();});
 document.getElementById("reload-btn").onclick=()=>{
-  sessionStorage.removeItem("freca_v4");sessionStorage.removeItem("freca_t4");fetchData();
+  sessionStorage.removeItem("freca_v5");sessionStorage.removeItem("freca_t5");fetchData();
 };
 
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
