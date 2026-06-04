@@ -19,21 +19,16 @@
     --radius:    14px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
   body {
     font-family: 'M PLUS Rounded 1c', 'Hiragino Kaku Gothic ProN', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    max-width: 480px;
-    margin: 0 auto;
-    min-height: 100vh;
+    background: var(--bg); color: var(--text);
+    max-width: 480px; margin: 0 auto; min-height: 100vh;
     padding-bottom: calc(var(--footer-h) + 8px);
   }
 
-  /* ── Header ── */
+  /* Header */
   .header {
-    background: var(--pink);
-    padding: 14px 16px 12px;
+    background: var(--pink); padding: 14px 16px 12px;
     position: sticky; top: 0; z-index: 20;
   }
   .header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -55,14 +50,11 @@
   }
   .search-box input::placeholder { color: #bbb; }
 
-  /* ── Grid ── */
+  /* Grid */
   .grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    padding: 14px 12px 8px;
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 12px; padding: 14px 12px 8px;
   }
-
   .card {
     background: var(--white); border-radius: var(--radius); overflow: hidden;
     cursor: pointer; box-shadow: 0 1px 4px rgba(240,98,146,0.10);
@@ -70,24 +62,20 @@
   }
   .card:active { transform: scale(0.96); }
 
-  /* 画像エリア：上余白を詰めて絵をアップで */
+  /* カード画像：上余白を詰めて絵をアップで */
   .card-img {
     width: 100%; padding-top: 105%;
     position: relative; overflow: hidden;
     background: linear-gradient(160deg, #fce4ec 0%, #e8eaf6 100%);
   }
   .card-img img {
-    position: absolute;
-    top: -10%; left: 0; width: 100%;
-    height: 200%;
+    position: absolute; top: -10%; left: 0; width: 100%; height: 200%;
     object-fit: cover; object-position: top center; display: block;
   }
   .card-img .no-img {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
     background: linear-gradient(145deg, #fce7f3, #ede9fe); font-size: 36px;
   }
-
   .card-body { padding: 9px 10px 11px; border-top: 1px solid var(--border); }
   .card-meta { display: flex; align-items: baseline; gap: 5px; flex-wrap: wrap; }
   .card-chara {
@@ -99,16 +87,15 @@
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
 
-  /* ── Pagination ── */
+  /* Pagination */
   .pagination {
     display: flex; align-items: center; justify-content: center;
     gap: 8px; padding: 12px 16px 16px;
   }
   .pg-btn {
     background: var(--white); border: 1.5px solid var(--border);
-    border-radius: 20px; padding: 7px 18px;
-    font-size: 13px; font-weight: 500; font-family: inherit;
-    color: var(--text-sub); cursor: pointer;
+    border-radius: 20px; padding: 7px 18px; font-size: 13px; font-weight: 500;
+    font-family: inherit; color: var(--text-sub); cursor: pointer;
   }
   .pg-btn:not(:disabled):active { background: var(--pink-bg); }
   .pg-btn:disabled { opacity: 0.3; cursor: default; }
@@ -120,7 +107,7 @@
   }
   .state .ico { font-size: 44px; display: block; margin-bottom: 10px; }
 
-  /* ── Footer Nav ── */
+  /* Footer Nav */
   .footer {
     position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
     width: 100%; max-width: 480px; height: var(--footer-h);
@@ -142,17 +129,16 @@
     height: 2.5px; background: var(--pink); border-radius: 0 0 3px 3px;
   }
 
-  /* ── Modal（中央表示） ── */
+  /* Modal：中央表示・大きめ */
   .overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.52); z-index: 100;
-    align-items: center; justify-content: center;
-    padding: 20px;
+    align-items: center; justify-content: center; padding: 16px;
   }
   .overlay.open { display: flex; }
   .modal {
     background: var(--white); border-radius: 22px;
-    width: 100%; max-width: 360px; max-height: 88vh;
+    width: 100%; max-width: 400px; max-height: 90vh;
     overflow-y: auto; animation: pop .2s ease-out;
   }
   @keyframes pop {
@@ -163,12 +149,10 @@
     width: 38px; height: 4px; background: #e0e0e0;
     border-radius: 99px; margin: 12px auto 0;
   }
-  .modal-top {
-    display: flex; align-items: center; gap: 10px; padding: 14px 16px 0;
-  }
+  .modal-top { display: flex; align-items: center; gap: 10px; padding: 14px 16px 0; }
   .modal-back {
-    width: 36px; height: 36px; border-radius: 50%;
-    border: none; background: var(--pink-bg); cursor: pointer;
+    width: 36px; height: 36px; border-radius: 50%; border: none;
+    background: var(--pink-bg); cursor: pointer;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .modal-back svg { width: 18px; height: 18px; stroke: var(--pink-dark); fill: none; stroke-width: 2.2; stroke-linecap: round; }
@@ -176,17 +160,18 @@
   .modal-chara { font-size: 11px; font-weight: 700; color: var(--pink); letter-spacing: 0.06em; }
   .modal-name  { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.35; margin-top: 2px; }
 
+  /* モーダル画像：大きめに */
   .modal-card-wrap {
-    margin: 18px auto 0;
-    width: min(200px, 55vw);
+    margin: 16px auto 0;
+    width: min(280px, 75vw);
     aspect-ratio: 2/3;
-    border-radius: 12px; overflow: hidden;
-    box-shadow: 0 4px 20px rgba(240,98,146,0.18);
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 4px 24px rgba(240,98,146,0.22);
     background: linear-gradient(160deg,#fce4ec,#e8eaf6);
   }
   .modal-card-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .modal-card-wrap .no-img {
-    width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:56px;
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:60px;
   }
   .modal-meta { padding: 14px 20px 28px; }
   .modal-yomi { font-size: 13px; color: var(--text-sub); margin-top: 4px; }
@@ -194,6 +179,9 @@
     margin-top: 10px; font-size: 13px; color: var(--text-sub);
     background: var(--pink-bg); border-radius: 10px; padding: 10px 14px; line-height: 1.65;
   }
+
+  /* デバッグ表示 */
+  #debug { font-size:10px; color:#aaa; padding: 4px 12px; display:none; }
 </style>
 </head>
 <body>
@@ -211,9 +199,11 @@
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.2" stroke-linecap="round">
       <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
     </svg>
-    <input type="search" id="search" placeholder="検索">
+    <input type="search" id="search" placeholder="検索（現在のタブ内）">
   </div>
 </header>
+
+<div id="debug"></div>
 
 <main>
   <div class="grid" id="grid">
@@ -246,11 +236,14 @@
 
 <script>
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwiWgNu6Vcw9Gyk3UHxCS9bSomX9T8WeWpeRIJDM93D3aYwOoesz-QnY9EJdCMbsHOSetZFv7sIrIp/pub?output=csv";
-const COL = { chara:"キャラ名", code:"コード名", img:"画像URL", yomi:"備考1", note1:"備考2", note2:"備考3" };
 const PAGE_SIZE = 20;
 
+// 列インデックス（0始まり）- ヘッダー名に頼らず列番号で直接取得
+// A=0:キャラ名, B=1:コード名, C=2:画像URL, D=3:備考1, E=4:備考2, F=5:備考3
+const CI = { chara:0, code:1, img:2, yomi:3, note1:4, note2:5 };
+
 const NAVS = [
-  { label:"みんな",   filter:null,       icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+  { label:"みんな",   filter:null       , icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
   { label:"ゆいしょ", filter:"ゆいしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>` },
   { label:"りいしょ", filter:"りいしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>` },
   { label:"ういしょ", filter:"ういしょ", icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>` },
@@ -263,7 +256,6 @@ const footerEl = document.getElementById("footer");
 NAVS.forEach((n, i) => {
   const btn = document.createElement("button");
   btn.className = "nav-btn" + (i===0?" active":"");
-  btn.dataset.i = i;
   btn.innerHTML = n.icon + `<span>${n.label}</span>`;
   btn.onclick = () => switchNav(i);
   footerEl.appendChild(btn);
@@ -286,10 +278,28 @@ function switchNav(i){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
-function parseCSV(t){
+// カタカナ→ひらがな変換
+function toHira(str){
+  return str.replace(/[\u30A1-\u30F6]/g, c => String.fromCharCode(c.charCodeAt(0)-0x60));
+}
+// ひらがな→カタカナ変換
+function toKata(str){
+  return str.replace(/[\u3041-\u3096]/g, c => String.fromCharCode(c.charCodeAt(0)+0x60));
+}
+// 検索用：入力をひらがな・カタカナ両方にマッチ
+function matchSearch(target, q){
+  if(!q) return true;
+  const t = target.toLowerCase();
+  const qH = toHira(q.toLowerCase());
+  const qK = toKata(q.toLowerCase());
+  return t.includes(q.toLowerCase()) || t.includes(qH) || t.includes(qK);
+}
+
+// CSV parse（列インデックスベース）
+function parseCSV(text){
   const rows=[]; let row=[],f="",inQ=false;
-  for(let i=0;i<t.length;i++){
-    const c=t[i],n=t[i+1];
+  for(let i=0;i<text.length;i++){
+    const c=text[i],n=text[i+1];
     if(inQ){if(c==='"'&&n==='"'){f+='"';i++;}else if(c==='"'){inQ=false;}else{f+=c;}}
     else{if(c==='"'){inQ=true;}else if(c===','){row.push(f);f="";}
     else if(c==='\r'&&n==='\n'){row.push(f);rows.push(row);row=[];f="";i++;}
@@ -299,61 +309,71 @@ function parseCSV(t){
   if(f||row.length){row.push(f);rows.push(row);}
   return rows;
 }
-function toObj(rows){
-  if(rows.length<2)return[];
-  const h=rows[0].map(x=>x.trim());
-  return rows.slice(1).filter(r=>r.some(c=>c.trim())).map(r=>{
-    const o={};h.forEach((k,i)=>{o[k]=(r[i]||"").trim();});return o;
-  });
+
+function rowsToData(rows){
+  // 1行目はヘッダー、2行目以降がデータ
+  // 列インデックスで直接取得するので列名に依存しない
+  return rows.slice(1).filter(r=>r.some(c=>(c||"").trim())).map(r=>({
+    chara: (r[CI.chara]||"").trim(),
+    code:  (r[CI.code] ||"").trim(),
+    img:   (r[CI.img]  ||"").trim(),
+    yomi:  (r[CI.yomi] ||"").trim(),
+    note1: (r[CI.note1]||"").trim(),
+    note2: (r[CI.note2]||"").trim(),
+  }));
 }
 
 async function fetchData(){
   showState("🌸","読み込み中…");
-  const ck="freca_v5",ct="freca_t5",TTL=5*60*1000;
-  try{const c=sessionStorage.getItem(ck),t=sessionStorage.getItem(ct);
-    if(c&&t&&Date.now()-Number(t)<TTL){allData=JSON.parse(c);render();return;}}catch(e){}
+  const ck="freca_v6",ct="freca_t6",TTL=5*60*1000;
+  try{
+    const c=sessionStorage.getItem(ck),t=sessionStorage.getItem(ct);
+    if(c&&t&&Date.now()-Number(t)<TTL){allData=JSON.parse(c);render();return;}
+  }catch(e){}
   try{
     const res=await fetch(SHEET_CSV_URL,{cache:"no-store"});
     if(!res.ok)throw new Error("HTTP "+res.status);
-    allData=toObj(parseCSV(await res.text()));
+    const rows=parseCSV(await res.text());
+    allData=rowsToData(rows);
     try{sessionStorage.setItem(ck,JSON.stringify(allData));sessionStorage.setItem(ct,String(Date.now()));}catch(e){}
     render();
-  }catch(e){showState("⚠️","読み込みに失敗しました");}
+  }catch(e){showState("⚠️","読み込みに失敗しました："+e.message);}
 }
 
 function getFiltered(){
-  const q=searchQ.toLowerCase();
   return allData.filter(d=>{
-    if(activeFilter!==null&&d[COL.chara]!==activeFilter)return false;
-    if(!q)return true;
-    return(d[COL.code]||"").includes(q)||(d[COL.yomi]||"").includes(q);
+    // タブフィルター（現在のタブ内のみ）
+    if(activeFilter!==null && d.chara!==activeFilter) return false;
+    if(!searchQ) return true;
+    // コード名・よみ両方をひらかな/カタカナ両対応で検索
+    return matchSearch(d.code, searchQ) || matchSearch(d.yomi, searchQ);
   });
 }
 
 function render(){
   const list=getFiltered();
   const total=Math.max(1,Math.ceil(list.length/PAGE_SIZE));
-  if(currentPage>total)currentPage=1;
-  const page=list.slice((currentPage-1)*PAGE_SIZE,currentPage*PAGE_SIZE);
+  if(currentPage>total) currentPage=1;
+  const page=list.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
   if(!page.length){showState("🔍","見つかりません");return;}
 
   const frag=document.createDocumentFragment();
   page.forEach(d=>{
     const card=document.createElement("div");
     card.className="card";
-    const url=d[COL.img]||"", name=d[COL.code]||"", chara=d[COL.chara]||"";
     card.innerHTML=
-      `<div class="card-img">${url
-        ?`<img src="${esc(url)}" alt="${esc(name)}" loading="lazy" decoding="async">`
+      `<div class="card-img">${d.img
+        ?`<img src="${esc(d.img)}" alt="${esc(d.code)}" loading="lazy" decoding="async">`
         :`<div class="no-img">🌸</div>`}</div>`+
       `<div class="card-body"><div class="card-meta">`+
-        `<span class="card-chara">${esc(chara)}</span>`+
-        `<span class="card-name">${esc(name)}</span>`+
+        `<span class="card-chara">${esc(d.chara)}</span>`+
+        `<span class="card-name">${esc(d.code)}</span>`+
       `</div></div>`;
     card.onclick=()=>openModal(d);
     frag.appendChild(card);
   });
-  gridEl.innerHTML=""; gridEl.appendChild(frag);
+  gridEl.innerHTML="";
+  gridEl.appendChild(frag);
   renderPag(total);
 }
 
@@ -372,24 +392,31 @@ function showState(ico,msg){
 }
 
 function openModal(d){
-  document.getElementById("m-chara").textContent=d[COL.chara]||"";
-  document.getElementById("m-name").textContent=d[COL.code]||"";
-  document.getElementById("m-yomi").textContent=d[COL.yomi]?"よみ："+d[COL.yomi]:"";
-  const note=[d[COL.note1],d[COL.note2]].filter(Boolean).join("　");
+  document.getElementById("m-chara").textContent=d.chara;
+  document.getElementById("m-name").textContent=d.code;
+  document.getElementById("m-yomi").textContent=d.yomi?"よみ："+d.yomi:"";
+  const note=[d.note1,d.note2].filter(Boolean).join("　");
   const ne=document.getElementById("m-note");
   ne.style.display=note?"block":"none"; ne.textContent=note;
   const iw=document.getElementById("m-img");
-  const url=d[COL.img]||"";
-  iw.innerHTML=url?`<img src="${esc(url)}" alt="${esc(d[COL.code]||"")}" loading="lazy">`:`<div class="no-img">🌸</div>`;
-  overlay.classList.add("open"); document.body.style.overflow="hidden";
+  iw.innerHTML=d.img
+    ?`<img src="${esc(d.img)}" alt="${esc(d.code)}" loading="lazy">`
+    :`<div class="no-img">🌸</div>`;
+  overlay.classList.add("open");
+  document.body.style.overflow="hidden";
 }
-function closeModal(){overlay.classList.remove("open");document.body.style.overflow="";}
+function closeModal(){
+  overlay.classList.remove("open");
+  document.body.style.overflow="";
+}
 document.getElementById("modal-back").onclick=closeModal;
 overlay.onclick=e=>{if(e.target===overlay)closeModal();};
 
 srchEl.addEventListener("input",e=>{searchQ=e.target.value;currentPage=1;render();});
 document.getElementById("reload-btn").onclick=()=>{
-  sessionStorage.removeItem("freca_v5");sessionStorage.removeItem("freca_t5");fetchData();
+  sessionStorage.removeItem("freca_v6");
+  sessionStorage.removeItem("freca_t6");
+  fetchData();
 };
 
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
