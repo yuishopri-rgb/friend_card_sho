@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>フレカ管理</title>
+<title>ゆいしょ家のフレカ</title>
 <link rel="apple-touch-icon" href="icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="フレカ管理">
+<meta name="apple-mobile-web-app-title" content="ゆいしょ家のフレカ">
 <meta name="theme-color" content="#f9b8d4">
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -303,7 +303,7 @@ function rowsToData(rows){
 }
 
 async function fetchData(){
-  showState("🌸","読み込み中…");
+  showState("<svg width="36" height="36" viewBox="0 0 24 24" fill="#f9b8d4" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>","読み込み中…");
   const ck="freca_v7",ct="freca_t7",TTL=5*60*1000;
   try{
     const c=sessionStorage.getItem(ck),t=sessionStorage.getItem(ct);
