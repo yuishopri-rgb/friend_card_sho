@@ -221,7 +221,19 @@
 
 <script>
 const HEART_ICO = '<svg width="36" height="36" viewBox="0 0 24 24" fill="#f9b8d4" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwiWgNu6Vcw9Gyk3UHxCS9bSomX9T8WeWpeRIJDM93D3aYwOoesz-QnY9EJdCMbsHOSetZFv7sIrIp/pub?output=csv";
+
+const BASE_URL = "https://docs.google.com/spreadsheets/d/1tGPSr0H1QQmokeE8aYH9316SBaNkEF10nQUgBvuow70/pub?output=csv";
+
+// 各シートのCSV URL（gid指定）
+const SHEET_URLS = {
+  "みんな":   BASE_URL + "&gid=0",           // ALLシート
+  "ゆいしょ": BASE_URL + "&gid=523891655",
+  "りいしょ": BASE_URL + "&gid=270191161",
+  "ういしょ": BASE_URL + "&gid=1057017649",
+  "れいしょ": BASE_URL + "&gid=174220195",
+  "よいしょ": BASE_URL + "&gid=1988028005",
+  "ないしょ": BASE_URL + "&gid=1720627815",
+};
 const PAGE_SIZE = 20;
 const CI = { chara:0, code:1, img:2, yomi:3, note1:4, note2:5 };
 
@@ -251,7 +263,7 @@ NAVS.forEach((n, i) => {
   footerEl.appendChild(btn);
 });
 
-let allData=[], activeFilter=null, searchQ="", currentPage=1;
+let allData=[], activeTab="みんな", searchQ="", currentPage=1;
 const gridEl=document.getElementById("grid");
 const pagEl=document.getElementById("pagination");
 const titleEl=document.getElementById("header-title");
@@ -261,10 +273,10 @@ const overlay=document.getElementById("overlay");
 function switchNav(i){
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
   footerEl.children[i].classList.add("active");
-  activeFilter=NAVS[i].filter;
+  activeTab=NAVS[i].label;
   titleEl.textContent=NAVS[i].label;
   srchEl.value=""; searchQ=""; currentPage=1;
-  render();
+  fetchData();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -305,13 +317,15 @@ function rowsToData(rows){
 
 async function fetchData(){
   showState(HEART_ICO,"読み込み中…");
-  const ck="freca_v7",ct="freca_t7",TTL=5*60*1000;
+  const ck="freca_"+activeTab, ct="freca_t_"+activeTab, TTL=5*60*1000;
   try{
     const c=sessionStorage.getItem(ck),t=sessionStorage.getItem(ct);
     if(c&&t&&Date.now()-Number(t)<TTL){allData=JSON.parse(c);render();return;}
   }catch(e){}
   try{
-    const res=await fetch(SHEET_CSV_URL,{cache:"no-store"});
+    const url=SHEET_URLS[activeTab];
+    if(!url)throw new Error("URLが見つかりません");
+    const res=await fetch(url,{cache:"no-store"});
     if(!res.ok)throw new Error("HTTP "+res.status);
     allData=rowsToData(parseCSV(await res.text()));
     try{sessionStorage.setItem(ck,JSON.stringify(allData));sessionStorage.setItem(ct,String(Date.now()));}catch(e){}
@@ -322,7 +336,6 @@ async function fetchData(){
 function getFiltered(){
   const q=searchQ.toLowerCase();
   return allData.filter(d=>{
-    if(activeFilter!==null&&d.chara!==activeFilter)return false;
     if(!q)return true;
     return matchSearch(d.code,q)||matchSearch(d.yomi,q);
   });
@@ -412,8 +425,11 @@ overlay.onclick=e=>{if(e.target===overlay)closeModal();};
 
 srchEl.addEventListener("input",e=>{searchQ=e.target.value;currentPage=1;render();});
 document.getElementById("reload-btn").onclick=()=>{
-  sessionStorage.removeItem("freca_v7");
-  sessionStorage.removeItem("freca_t7");
+  // 全タブのキャッシュをクリア
+  Object.keys(SHEET_URLS).forEach(tab=>{
+    sessionStorage.removeItem("freca_"+tab);
+    sessionStorage.removeItem("freca_t_"+tab);
+  });
   fetchData();
 };
 
