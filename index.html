@@ -222,11 +222,11 @@
 <script>
 const HEART_ICO = '<svg width="36" height="36" viewBox="0 0 24 24" fill="#f9b8d4" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
 
-const BASE_URL = "https://docs.google.com/spreadsheets/d/1tGPSr0H1QQmokeE8aYH9316SBaNkEF10nQUgBvuow70/pub?output=csv";
+const BASE_URL = "https://docs.google.com/spreadsheets/d/1tGPSr0H1QQmokeE8aYH9316SBaNkEF10nQUgBvuow70/pub?single=true&output=csv";
 
 // 各シートのCSV URL（gid指定）
 const SHEET_URLS = {
-  "みんな":   BASE_URL + "&gid=0",           // ALLシート
+  "みんな":   BASE_URL + "&gid=0",
   "ゆいしょ": BASE_URL + "&gid=523891655",
   "りいしょ": BASE_URL + "&gid=270191161",
   "ういしょ": BASE_URL + "&gid=1057017649",
