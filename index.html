@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="preconnect" href="https://docs.google.com">
+<link rel="preconnect" href="https://res.cloudinary.com">
+<link rel="dns-prefetch" href="https://docs.google.com">
+<link rel="dns-prefetch" href="https://res.cloudinary.com">
 <title>ゆいしょ家のフレカ</title>
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ゆいしょ家のフレカ">
@@ -19,7 +23,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ゆいしょ家のフレカ">
 <meta name="theme-color" content="#f9b8d4">
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet"></noscript>
 <style>
   :root {
     --pink:      #f9a8c9;
@@ -315,20 +322,39 @@ function rowsToData(rows){
   }));
 }
 
-async function fetchData(){
-  showState(HEART_ICO,"読み込み中…");
-  const ck="freca_all", ct="freca_t_all", TTL=5*60*1000;
-  try{
-    const c=sessionStorage.getItem(ck),t=sessionStorage.getItem(ct);
-    if(c&&t&&Date.now()-Number(t)<TTL){allData=JSON.parse(c);render();return;}
-  }catch(e){}
+const CACHE_KEY="freca_all_v2";
+
+async function fetchData(forceReload=false){
+  // ① まずローカルキャッシュがあれば即表示（爆速起動）
+  let hasCache=false;
+  if(!forceReload){
+    try{
+      const c=localStorage.getItem(CACHE_KEY);
+      if(c){
+        allData=JSON.parse(c);
+        render();
+        hasCache=true;
+      }
+    }catch(e){}
+  }
+  if(!hasCache) showState(HEART_ICO,"読み込み中…");
+
+  // ② 裏で最新データを取得して差し替え
   try{
     const res=await fetch(SHEET_CSV_URL,{cache:"no-store"});
     if(!res.ok)throw new Error("HTTP "+res.status);
-    allData=rowsToData(parseCSV(await res.text()));
-    try{sessionStorage.setItem(ck,JSON.stringify(allData));sessionStorage.setItem(ct,String(Date.now()));}catch(e){}
-    render();
-  }catch(e){showState("⚠️","読み込みに失敗しました："+e.message);}
+    const fresh=rowsToData(parseCSV(await res.text()));
+    // データが変わっていたら再描画
+    const freshStr=JSON.stringify(fresh);
+    if(freshStr!==JSON.stringify(allData)){
+      allData=fresh;
+      render();
+    }
+    try{localStorage.setItem(CACHE_KEY,freshStr);}catch(e){}
+  }catch(e){
+    if(!hasCache) showState("⚠️","読み込みに失敗しました："+e.message);
+    // キャッシュ表示済みなら静かに失敗（古いデータのまま使える）
+  }
 }
 
 function getFiltered(){
@@ -366,6 +392,14 @@ function render(){
   gridEl.innerHTML="";
   gridEl.appendChild(frag);
   renderPag(total);
+
+  // 次ページの画像を裏で事前読み込み
+  if(currentPage<total){
+    const nextPage=list.slice(currentPage*PAGE_SIZE,(currentPage+1)*PAGE_SIZE);
+    nextPage.forEach(d=>{
+      if(d.img){const im=new Image();im.src=d.img;}
+    });
+  }
 }
 
 function renderPag(total){
@@ -424,9 +458,8 @@ overlay.onclick=e=>{if(e.target===overlay)closeModal();};
 
 srchEl.addEventListener("input",e=>{searchQ=e.target.value;currentPage=1;render();});
 document.getElementById("reload-btn").onclick=()=>{
-  sessionStorage.removeItem("freca_all");
-  sessionStorage.removeItem("freca_t_all");
-  fetchData();
+  localStorage.removeItem(CACHE_KEY);
+  fetchData(true);
 };
 
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
