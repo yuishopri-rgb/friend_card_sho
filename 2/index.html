@@ -1,1 +1,516 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ミクコちゃん</title>
+<!-- 画像CDNへの接続を事前確立 -->
+<link rel="dns-prefetch" href="//aipri.jp">
+<link rel="dns-prefetch" href="//www.takaratomy-arts.co.jp">
+<link rel="preconnect" href="https://aipri.jp" crossorigin>
+<link rel="preconnect" href="https://www.takaratomy-arts.co.jp" crossorigin>
+<link rel="dns-prefetch" href="//raw.githubusercontent.com">
+<link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --pk:#E0659A;--pkl:#F4A7C3;--pkp:#FBE8F1;--pkd:#C94F84;
+  --bg:#fff;--bg2:#F8F8FB;--bg3:#EFEFF5;
+  --t1:#1a1a2e;--t2:#6b7280;--t3:#9ca3af;
+  --bd:rgba(0,0,0,.08);--bd2:rgba(0,0,0,.14);
+  --r:10px;--rl:14px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;background:var(--bg3);color:var(--t1);display:flex;flex-direction:column}
+
+/* ヘッダー */
+.hd{background:var(--bg);padding:calc(8px + var(--safe-top)) 12px 8px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);flex-shrink:0;z-index:10}
+.hd-icon{width:26px;height:26px;background:linear-gradient(135deg,#E0659A,#a78bfa);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;flex-shrink:0}
+.hd-ttl{font-size:15px;font-weight:700;background:linear-gradient(135deg,#E0659A,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hd-status{margin-left:auto;font-size:10px;color:var(--t3);display:flex;align-items:center;gap:4px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--t3);flex-shrink:0}
+.dot.ok{background:#10b981}
+.dot.loading{background:#f59e0b;animation:blink .8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* 常時表示フィルターバー */
+.filter-bar{background:var(--bg);border-bottom:.5px solid var(--bd);flex-shrink:0;padding:6px 10px;display:flex;flex-direction:column;gap:5px}
+.fb-row{display:flex;align-items:center;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.fb-row::-webkit-scrollbar{display:none}
+.fb-label{font-size:10px;color:var(--t3);white-space:nowrap;flex-shrink:0;min-width:32px}
+.chip{padding:4px 9px;font-size:11px;border-radius:20px;border:.5px solid var(--bd2);background:var(--bg2);color:var(--t2);cursor:pointer;user-select:none;white-space:nowrap;flex-shrink:0;-webkit-appearance:none}
+.chip.on{background:var(--pk);border-color:var(--pk);color:#fff;font-weight:600}
+.cdot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;flex-shrink:0}
+.cdot.on{border-color:#333}
+.search-row{position:relative;flex-shrink:0}
+.search-row input{width:100%;padding:6px 10px 6px 28px;font-size:13px;border:.5px solid var(--bd2);border-radius:20px;background:var(--bg2);color:var(--t1);outline:none;-webkit-appearance:none}
+.search-row::before{content:'🔍';position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;pointer-events:none}
+
+/* メインレイアウト */
+.main{flex:1;display:flex;min-height:0;overflow:hidden;gap:8px;padding:8px}
+@media(max-width:699px){.main{padding:6px;gap:0}}
+
+/* アイテムパネル */
+.item-panel{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--bg);border-radius:var(--rl);box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.item-header{padding:6px 10px;font-size:11px;font-weight:500;color:var(--t2);background:var(--bg2);border-bottom:.5px solid var(--bd);display:flex;align-items:center;flex-shrink:0}
+.item-count{font-size:10px;color:var(--t3);margin-left:auto}
+.item-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px}
+/* PCは初期サイズに（120pxくらい） */
+.item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+@media(max-width:699px){.item-grid{grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:5px}}
+.ic{border-radius:8px;cursor:pointer;border:2px solid transparent;background:var(--bg2);display:flex;flex-direction:column;align-items:center;padding:5px 4px 4px;gap:3px;position:relative}
+.ic.sel{border-color:var(--pk);background:var(--pkp)}
+.ic img{width:100%;aspect-ratio:1;object-fit:contain;background:#fff;border-radius:6px;display:block}
+.ic .nm{font-size:9px;color:var(--t2);text-align:center;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;width:100%}
+.no-img{width:100%;aspect-ratio:1;background:var(--bg3);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--t3);text-align:center;padding:2px}
+.bdg{position:absolute;font-size:8px;padding:1px 4px;border-radius:4px;font-weight:700;line-height:1.5}
+.bs{top:3px;left:3px}.bp{top:3px;right:3px}
+.bai{background:#FFE4F0;color:#B5316A}.bpm{background:#E4EEFF;color:#2A5AAF}
+.bワンピース{background:#FCE4EC;color:#A01A55}
+.bトップス{background:#FFECD6;color:#C05A00}
+.bボトムス{background:#E8F5E9;color:#1B6B2F}
+.bシューズ{background:#E8EAF6;color:#3949AB}
+.bアクセサリ{background:#FFF9C4;color:#827717}
+.msg{text-align:center;padding:30px 10px;color:var(--t3);font-size:12px;grid-column:1/-1}
+
+/* フローティングプレビュー（スマホ右下・2倍サイズ） */
+.float-prev{
+  position:fixed;right:14px;bottom:calc(14px + var(--safe-bottom));
+  width:170px;background:rgba(255,255,255,.97);
+  border-radius:18px;border:.5px solid var(--pkl);
+  box-shadow:0 4px 18px rgba(224,101,154,.3);
+  z-index:50;overflow:hidden;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;
+  padding:8px 6px 6px;gap:0;
+}
+.float-lbl{font-size:10px;color:var(--pk);font-weight:700;margin-bottom:2px}
+.float-empty{width:155px;height:200px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3);text-align:center;line-height:1.5}
+.fp-slot{display:flex;flex-direction:column;align-items:center;width:155px;position:relative;isolation:isolate}
+.fp-slot img{object-fit:contain;display:block;width:100%;pointer-events:none}
+.fp-slot.acce    img{height:55px} .fp-slot.acce    {margin-bottom:-8px;z-index:5}
+.fp-slot.onepiece img{height:140px}.fp-slot.onepiece{margin-bottom:-14px;z-index:3}
+.fp-slot.tops    img{height:85px} .fp-slot.tops    {margin-bottom:-12px;z-index:3}
+.fp-slot.bottoms img{height:75px} .fp-slot.bottoms {margin-bottom:-12px;z-index:2}
+.fp-slot.shoes   img{height:60px} .fp-slot.shoes   {z-index:4}
+.float-tap{font-size:9px;color:var(--pk);margin-top:5px;opacity:.7}
+
+/* PCサイドプレビュー */
+@media(min-width:700px){
+  .float-prev{display:none}
+  .side-prev{width:280px;flex-shrink:0;background:var(--bg);border-radius:var(--rl);box-shadow:0 1px 4px rgba(0,0,0,.07);display:flex;flex-direction:column;overflow:hidden}
+  .side-prev-hd{padding:7px 10px;font-size:11px;font-weight:600;color:var(--t2);background:var(--bg2);border-bottom:.5px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .side-prev-stage{flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:10px;background:linear-gradient(160deg,#fff8fc,#f0f0ff)}
+  .side-prev-actions{padding:7px 8px;display:flex;gap:5px;justify-content:center;border-top:.5px solid var(--bd);flex-shrink:0}
+  .side-prev .fp-slot{width:160px}
+  .side-prev .fp-slot.acce    img{height:55px}
+  .side-prev .fp-slot.onepiece img{height:150px}.side-prev .fp-slot.onepiece{margin-bottom:-15px}
+  .side-prev .fp-slot.tops    img{height:90px} .side-prev .fp-slot.tops    {margin-bottom:-12px}
+  .side-prev .fp-slot.bottoms img{height:82px} .side-prev .fp-slot.bottoms {margin-bottom:-12px}
+  .side-prev .fp-slot.shoes   img{height:65px}
+  .side-prev .float-empty{width:160px;height:200px}
+}
+@media(max-width:699px){.side-prev{display:none}}
+
+/* ===== 保存画面（1枚絵スクショ向け） ===== */
+.prev-modal{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.85);
+  display:none;flex-direction:column;align-items:center;
+  padding:calc(16px + var(--safe-top)) 16px calc(16px + var(--safe-bottom));
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+.prev-modal.open{display:flex}
+.prev-modal-head{width:100%;max-width:520px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0}
+.prev-modal-ttl{color:#fff;font-size:14px;font-weight:600}
+.prev-modal-close{background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:20px;padding:8px 16px;font-size:12px;cursor:pointer;-webkit-appearance:none}
+
+/* 1枚絵の白いコンテナ */
+.snap-card{
+  background:#fff;
+  border-radius:20px;
+  padding:20px 20px 20px;
+  width:100%;max-width:440px;
+  box-shadow:0 6px 30px rgba(0,0,0,.25);
+}
+.snap-title{
+  text-align:center;
+  font-size:13px;
+  font-weight:700;
+  background:linear-gradient(135deg,#E0659A,#a78bfa);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:14px;
+  letter-spacing:.04em;
+}
+
+/* ワンピ系: 3段構成 */
+.snap-onepiece-layout{display:flex;flex-direction:column;align-items:center;gap:14px}
+.snap-onepiece-layout .snap-row{display:flex;align-items:center;gap:16px;width:100%;max-width:400px}
+.snap-onepiece-layout .snap-img-wrap{width:150px;flex-shrink:0;display:flex;justify-content:center;align-items:center}
+
+/* セパレート系: 4段構成 */
+.snap-separate-layout{display:flex;flex-direction:column;align-items:center;gap:14px}
+.snap-separate-layout .snap-row{display:flex;align-items:center;gap:16px;width:100%;max-width:400px}
+.snap-separate-layout .snap-img-wrap{width:150px;flex-shrink:0;display:flex;justify-content:center;align-items:center}
+
+.snap-row img{object-fit:contain;display:block;pointer-events:none;max-width:100%}
+.snap-row.r-acce    img{height:80px}
+.snap-row.r-onepiece img{height:100px}
+.snap-row.r-tops    img{height:120px}
+.snap-row.r-bottoms img{height:110px}
+.snap-row.r-shoes   img{height:85px}
+
+.snap-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.snap-lbl{font-size:10px;color:var(--pk);font-weight:700;letter-spacing:.06em}
+.snap-name{font-size:14px;color:var(--t1);line-height:1.35;font-weight:500;word-break:break-word}
+.snap-code{font-size:10px;color:var(--t3)}
+
+.snap-footer{
+  margin-top:14px;padding-top:10px;
+  border-top:.5px solid var(--bd);
+  text-align:center;font-size:10px;color:var(--t3);
+}
+
+.btn{padding:5px 12px;font-size:11px;border-radius:20px;cursor:pointer;border:.5px solid var(--bd2);-webkit-appearance:none}
+.bo{background:var(--bg);color:var(--t2)}
+.bpr{background:var(--pk);color:#fff;border:none;font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<div class="hd">
+  <div class="hd-icon">✦</div>
+  <div class="hd-ttl">ミクコちゃん</div>
+  <div class="hd-status">
+    <div class="dot loading" id="load-dot"></div>
+    <span id="load-txt">読み込み中...</span>
+  </div>
+</div>
+
+<!-- フィルター -->
+<div class="filter-bar">
+  <div class="search-row">
+    <input type="search" placeholder="コーデ名・IDで検索..." id="q" oninput="render()" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+  </div>
+  <div class="fb-row">
+    <span class="fb-label">作品</span>
+    <div class="chip on" id="src-all"     onclick="setSrc('all')">すべて</div>
+    <div class="chip"    id="src-aipri"   onclick="setSrc('aipri')">アイプリ</div>
+    <div class="chip"    id="src-primagi" onclick="setSrc('primagi')">プリマジ</div>
+  </div>
+  <div class="fb-row">
+    <span class="fb-label">シリーズ</span>
+    <div id="brand-chips" style="display:contents"></div>
+  </div>
+  <div class="fb-row">
+    <span class="fb-label">パーツ</span>
+    <div class="chip on" id="part-all"       onclick="setPart('all')">すべて</div>
+    <div class="chip"    id="part-ワンピース" onclick="setPart('ワンピース')">ワンピ</div>
+    <div class="chip"    id="part-トップス"  onclick="setPart('トップス')">トップス</div>
+    <div class="chip"    id="part-ボトムス"  onclick="setPart('ボトムス')">ボトムス</div>
+    <div class="chip"    id="part-シューズ"  onclick="setPart('シューズ')">シューズ</div>
+    <div class="chip"    id="part-アクセサリ" onclick="setPart('アクセサリ')">アクセ</div>
+  </div>
+  <div class="fb-row">
+    <span class="fb-label">色</span>
+    <div class="cdot on" id="cd-" style="background:conic-gradient(#FF8FAB,#FFD166,#A0E7E5,#C7CEEA,#fff)" onclick="setColor('')"></div>
+    <div class="cdot" id="cd-ピンク"   style="background:#FF8FAB" onclick="setColor('ピンク')"></div>
+    <div class="cdot" id="cd-イエロー" style="background:#FFD166" onclick="setColor('イエロー')"></div>
+    <div class="cdot" id="cd-ブルー"   style="background:#7EC8E3" onclick="setColor('ブルー')"></div>
+    <div class="cdot" id="cd-グリーン" style="background:#B5EAD7" onclick="setColor('グリーン')"></div>
+    <div class="cdot" id="cd-パープル" style="background:#C7CEEA" onclick="setColor('パープル')"></div>
+    <div class="cdot" id="cd-オレンジ" style="background:#FFB347" onclick="setColor('オレンジ')"></div>
+    <div class="cdot" id="cd-ホワイト" style="background:#f0f0f0;border:.5px solid #ccc" onclick="setColor('ホワイト')"></div>
+    <div class="cdot" id="cd-ブラック" style="background:#555" onclick="setColor('ブラック')"></div>
+  </div>
+</div>
+
+<!-- メイン -->
+<div class="main">
+  <div class="item-panel">
+    <div class="item-header">
+      <span>アイテム一覧</span>
+      <span class="item-count" id="pcnt"></span>
+    </div>
+    <div class="item-scroll">
+      <div class="item-grid" id="grid">
+        <div class="msg">データを読み込み中...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PCサイドプレビュー -->
+  <div class="side-prev">
+    <div class="side-prev-hd">
+      <span>プレビュー</span>
+      <button onclick="rnd()" class="btn bo" style="font-size:10px;padding:3px 8px">ランダム</button>
+    </div>
+    <div class="side-prev-stage" id="side-stage">
+      <div class="float-empty" id="side-empty">アイテムを選んで♪</div>
+    </div>
+    <div class="side-prev-actions">
+      <button class="btn bo" onclick="clr()">リセット</button>
+      <button class="btn bpr" onclick="openPrevModal()">保存 / 画像出力</button>
+    </div>
+  </div>
+</div>
+
+<!-- フローティングプレビュー（スマホ） -->
+<div class="float-prev" id="float-prev" onclick="openPrevModal()">
+  <div class="float-lbl">コーデ</div>
+  <div class="float-empty" id="float-empty">タップして<br>確認・保存</div>
+  <div id="float-slots"></div>
+  <div class="float-tap" id="float-tap" style="display:none">タップで拡大</div>
+</div>
+
+<!-- 保存画面（白カード1枚絵） -->
+<div class="prev-modal" id="prev-modal">
+  <div class="prev-modal-head">
+    <span class="prev-modal-ttl"></span>
+    <button class="prev-modal-close" onclick="closePrevModal()">✕ 閉じる</button>
+  </div>
+  <div class="snap-card" id="snap-card">
+    <div id="snap-body">
+      <p style="color:var(--t3);font-size:13px;text-align:center;padding:40px 0">アイテムを選んでください</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const GITHUB_RAW='https://raw.githubusercontent.com/yuishopri-rgb/e34tgea/main/';
+const MANIFEST_URL=GITHUB_RAW+'manifest.json';
+
+const CK={
+  'ピンク':['ピンク','ローズ','いちご','チェリー','ラズベリー','ベリー','コーラル','ハート'],
+  'ブルー':['ブルー','スカイ','ネイビー','みずいろ','ソーダ','マリン','アクア'],
+  'イエロー':['イエロー','ゴールド','レモン','ひまわり','サンシャイン','バナナ'],
+  'グリーン':['グリーン','ミント','リーフ','モスグリーン','エメラルド','マスカット'],
+  'パープル':['パープル','ラベンダー','バイオレット','ライラック','グレープ','ミッドナイト'],
+  'オレンジ':['オレンジ','アンバー','ピーチ','マカロン'],
+  'ホワイト':['ホワイト','ミルキー','パール','スノー','クリーム','シルバー','ウエディング','ウェディング'],
+  'ブラック':['ブラック','ダーク','ゴシック','ロック'],
+};
+function dc(n){for(const[c,kw]of Object.entries(CK))if(kw.some(k=>n.includes(k)))return c;return 'その他';}
+
+function parseCsv(text){
+  const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim());
+  const start=/^brand/i.test(lines[0])?1:0;
+  const rows=[];
+  for(const line of lines.slice(start)){
+    const cols=[];let cur='',inQ=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+      else if(c===','&&!inQ){cols.push(cur);cur='';}
+      else cur+=c;
+    }
+    cols.push(cur);
+    if(cols.length>=5)rows.push(cols);
+  }
+  return rows;
+}
+
+let ALL=[],fSrc='all',fPart='all',fColor='',fBrand='all';
+let coord={},brands=new Set();
+
+async function loadData(){
+  const dot=document.getElementById('load-dot');
+  const txt=document.getElementById('load-txt');
+  dot.className='dot loading';
+  let manifest;
+  try{
+    const res=await fetch(MANIFEST_URL);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    manifest=await res.json();
+  }catch(e){
+    dot.className='dot';txt.textContent='manifestエラー';
+    document.getElementById('grid').innerHTML='<div class="msg">manifest.json読み込み失敗<br>'+e.message+'</div>';
+    return;
+  }
+  const allFiles=[...manifest.files.aipri,...manifest.files.primagi];
+  let loaded=0,total=allFiles.length;
+  txt.textContent='0/'+total;
+  for(const{file,label}of allFiles){
+    try{
+      const res=await fetch(GITHUB_RAW+file);
+      if(!res.ok){loaded++;txt.textContent=loaded+'/'+total;continue;}
+      const rows=parseCsv(await res.text());
+      const src=/\/(AP_|APR_|OAP_|APSP_)/.test(file)?'aipri':'primagi';
+      const existing=new Set(ALL.map(x=>x.id));
+      for(const[brand,cardId,name,part,imgUrl]of rows){
+        const id=src+'_'+cardId+'_'+part;
+        if(existing.has(id))continue;
+        ALL.push({id,code:cardId,name,part,src,brand,img:imgUrl.trim(),color:dc(name)});
+        brands.add(brand);
+      }
+    }catch(e){}
+    loaded++;txt.textContent=loaded+'/'+total;
+    renderBrandChips();render();
+  }
+  dot.className='dot ok';txt.textContent=ALL.length+'件';
+  renderBrandChips();render();
+}
+
+let rPending=false;
+function render(){if(rPending)return;rPending=true;requestAnimationFrame(()=>{rPending=false;_render();});}
+function filtered(){
+  const q=(document.getElementById('q').value||'').toLowerCase();
+  return ALL.filter(it=>{
+    if(fSrc!=='all'&&it.src!==fSrc)return false;
+    if(fPart!=='all'&&it.part!==fPart)return false;
+    if(fColor&&it.color!==fColor)return false;
+    if(fBrand!=='all'&&it.brand!==fBrand)return false;
+    if(q&&!it.name.toLowerCase().includes(q)&&!it.code.toLowerCase().includes(q))return false;
+    return true;
+  });
+}
+function _render(){
+  const list=filtered();
+  document.getElementById('pcnt').textContent=list.length+'件';
+  const g=document.getElementById('grid');
+  if(!list.length){g.innerHTML=`<div class="msg">${ALL.length?'該当なし':'読み込み中...'}</div>`;return;}
+  // 画像URL有無で分岐、loading=lazy + decoding=async + fetchpriority=low で並列負荷削減
+  g.innerHTML=list.map((it,i)=>{
+    const sel=coord[it.part]&&coord[it.part].id===it.id;
+    const pl=it.part==='アクセサリ'?'アクセ':it.part;
+    // 最初の30件は eager、それ以降は lazy
+    const loadAttr=i<30?'loading="eager" fetchpriority="high"':'loading="lazy" fetchpriority="low"';
+    return`<div class="ic${sel?' sel':''}" data-id="${it.id}">
+      <div class="bdg bs ${it.src==='aipri'?'bai':'bpm'}">${it.src==='aipri'?'AI':'PM'}</div>
+      <div class="bdg bp b${it.part}">${pl}</div>
+      ${it.img?`<img src="${it.img}" alt="" ${loadAttr} decoding="async">`:`<div class="no-img">${it.code}</div>`}
+      <div class="nm">${it.name}</div>
+    </div>`;
+  }).join('');
+}
+document.getElementById('grid').addEventListener('click',e=>{
+  const ic=e.target.closest('.ic');if(!ic)return;
+  pick(ic.dataset.id);
+});
+
+const SLOT_DEFS=[
+  ['アクセサリ','acce','アクセ'],
+  ['ワンピース','onepiece','ワンピース'],
+  ['トップス','tops','トップス'],
+  ['ボトムス','bottoms','ボトムス'],
+  ['シューズ','shoes','シューズ'],
+];
+function activeSlots(){
+  return SLOT_DEFS.filter(([key])=>{
+    if(key==='ワンピース')return !!coord['ワンピース'];
+    if(key==='トップス')  return !coord['ワンピース']&&!!coord['トップス'];
+    if(key==='ボトムス')  return !coord['ワンピース']&&!!coord['ボトムス'];
+    return !!coord[key];
+  });
+}
+
+function renderFloatPrev(){
+  const slots=activeSlots();
+  const empty=document.getElementById('float-empty');
+  const slotsEl=document.getElementById('float-slots');
+  const tap=document.getElementById('float-tap');
+  const sideEmpty=document.getElementById('side-empty');
+  const sideStage=document.getElementById('side-stage');
+
+  if(!slots.length){
+    empty.style.display='flex';slotsEl.innerHTML='';tap.style.display='none';
+    if(sideEmpty)sideEmpty.style.display='flex';
+    sideStage.querySelectorAll('.fp-slot').forEach(e=>e.remove());
+    return;
+  }
+  empty.style.display='none';tap.style.display='block';
+  if(sideEmpty)sideEmpty.style.display='none';
+
+  slotsEl.innerHTML=slots.map(([key,cls])=>{
+    const it=coord[key];if(!it)return'';
+    return`<div class="fp-slot ${cls}"><img src="${it.img||''}" alt="" onerror="this.style.opacity='.1'"></div>`;
+  }).join('');
+
+  sideStage.querySelectorAll('.fp-slot').forEach(e=>e.remove());
+  slots.forEach(([key,cls])=>{
+    const it=coord[key];if(!it)return;
+    const div=document.createElement('div');div.className=`fp-slot ${cls}`;
+    const img=document.createElement('img');img.src=it.img||'';img.alt='';
+    img.onerror=()=>{img.style.opacity='.15';};
+    div.appendChild(img);sideStage.appendChild(div);
+  });
+}
+
+/* ===== 保存画面のレンダリング =====
+   - ワンピース構成: アクセ・ワンピ・シューズ の3段
+   - セパレート構成: アクセ・トップス・ボトムス・シューズ の4段
+   - 各行は [画像] [テキスト情報] の横並びで余白十分
+   - ボタン類は一切なし（純粋な1枚絵）
+*/
+function renderPrevModal(){
+  const body=document.getElementById('snap-body');
+  const slots=activeSlots();
+  if(!slots.length){
+    body.innerHTML='<p style="color:var(--t3);font-size:13px;text-align:center;padding:40px 0">アイテムを選んでください</p>';
+    return;
+  }
+  const isOnePiece=!!coord['ワンピース'];
+  const layoutCls=isOnePiece?'snap-onepiece-layout':'snap-separate-layout';
+  body.innerHTML=`<div class="${layoutCls}">${
+    slots.map(([key,cls,lbl])=>{
+      const it=coord[key];if(!it)return'';
+      return`<div class="snap-row r-${cls}">
+        <div class="snap-img-wrap"><img src="${it.img||''}" alt="" onerror="this.style.opacity='.1'"></div>
+        <div class="snap-info">
+          <div class="snap-lbl">${lbl}</div>
+          <div class="snap-name">${it.name}</div>
+          <div class="snap-code">${it.code}  ·  ${it.brand}</div>
+        </div>
+      </div>`;
+    }).join('')
+  }</div>`;
+}
+
+function openPrevModal(){renderPrevModal();document.getElementById('prev-modal').classList.add('open');}
+function closePrevModal(){document.getElementById('prev-modal').classList.remove('open');}
+
+function pick(id){
+  const it=ALL.find(x=>x.id===id);if(!it)return;
+  if(coord[it.part]&&coord[it.part].id===id)delete coord[it.part];
+  else{
+    if(it.part==='ワンピース'){delete coord['トップス'];delete coord['ボトムス'];}
+    if(it.part==='トップス'||it.part==='ボトムス')delete coord['ワンピース'];
+    coord[it.part]=it;
+  }
+  render();renderFloatPrev();
+}
+function clr(){coord={};render();renderFloatPrev();}
+function rnd(){
+  coord={};
+  const pool=filtered().length?filtered():ALL;
+  if(pool.some(x=>x.part==='ワンピース')&&Math.random()>.4){
+    const c=pool.filter(x=>x.part==='ワンピース');coord['ワンピース']=c[Math.floor(Math.random()*c.length)];
+  }else{
+    ['トップス','ボトムス'].forEach(p=>{const c=pool.filter(x=>x.part===p);if(c.length)coord[p]=c[Math.floor(Math.random()*c.length)];});
+  }
+  ['シューズ','アクセサリ'].forEach(p=>{const c=pool.filter(x=>x.part===p);if(c.length)coord[p]=c[Math.floor(Math.random()*c.length)];});
+  render();renderFloatPrev();
+  if(document.getElementById('prev-modal').classList.contains('open'))renderPrevModal();
+}
+
+function renderBrandChips(){
+  document.getElementById('brand-chips').innerHTML=
+    `<div class="chip ${fBrand==='all'?'on':''}" onclick="setBrand('all')">すべて</div>`+
+    [...brands].map(b=>`<div class="chip ${fBrand===b?'on':''}" onclick="setBrand('${b.replace(/'/g,"\\'")}')">${b}</div>`).join('');
+}
+function setSrc(v){fSrc=v;['all','aipri','primagi'].forEach(k=>document.getElementById('src-'+k).classList.toggle('on',k===v));render();}
+function setPart(v){fPart=v;['all','ワンピース','トップス','ボトムス','シューズ','アクセサリ'].forEach(k=>document.getElementById('part-'+k).classList.toggle('on',k===v));render();}
+function setBrand(v){fBrand=v;renderBrandChips();render();}
+function setColor(v){
+  fColor=fColor===v?'':v;
+  document.querySelectorAll('.cdot').forEach(d=>{d.classList.remove('on');if(d.id==='cd-'+fColor||(fColor===''&&d.id==='cd-'))d.classList.add('on');});
+  render();
+}
+
+renderBrandChips();render();loadData();
+</script>
+</body>
+</html>
