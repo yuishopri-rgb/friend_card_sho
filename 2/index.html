@@ -379,6 +379,16 @@ async function loadData(){
 
 let rPending=false;
 function render(){if(rPending)return;rPending=true;requestAnimationFrame(()=>{rPending=false;_render();});}
+
+// ひらがな⇔カタカナ変換
+function toHira(s){return s.replace(/[\u30A1-\u30F6]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));}
+function toKata(s){return s.replace(/[\u3041-\u3096]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60));}
+function matchText(target,q){
+  if(!q)return true;
+  const t=target.toLowerCase();
+  return t.includes(q)||t.includes(toHira(q))||t.includes(toKata(q));
+}
+
 function filtered(){
   const q=(document.getElementById('q').value||'').toLowerCase();
   return ALL.filter(it=>{
@@ -386,7 +396,7 @@ function filtered(){
     if(fPart!=='all'&&it.part!==fPart)return false;
     if(fColor&&it.color!==fColor)return false;
     if(fBrand!=='all'&&it.brand!==fBrand)return false;
-    if(q&&!it.name.toLowerCase().includes(q)&&!it.code.toLowerCase().includes(q))return false;
+    if(q&&!matchText(it.name,q)&&!matchText(it.code,q))return false;
     return true;
   });
 }
