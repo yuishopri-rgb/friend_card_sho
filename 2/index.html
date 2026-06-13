@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta name="robots" content="noindex, nofollow">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ミクコちゃん</title>
@@ -103,7 +102,7 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
 .bアクセサリ{background:#FFF9C4;color:#827717}
 .msg{text-align:center;padding:30px 10px;color:var(--t3);font-size:12px;grid-column:1/-1}
 
-/* フローティングプレビュー（スマホ右下・2倍サイズ） */
+/* フローティングプレビュー（スマホ右下） */
 .float-prev{
   position:fixed;right:14px;bottom:calc(14px + var(--safe-bottom));
   width:170px;background:rgba(255,255,255,.97);
@@ -112,7 +111,27 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
   z-index:50;overflow:hidden;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;
   padding:8px 6px 6px;gap:0;
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  touch-action:pan-y;
+  will-change:transform;
 }
+/* 格納状態：右にスライドアウト、タブだけ残す */
+.float-prev.hidden{
+  transform:translateX(calc(100% - 28px));
+}
+/* 格納タブ（格納時に左端に出る引き出しタブ） */
+.float-tab{
+  position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:24px;height:56px;
+  background:var(--pk);
+  border-radius:10px 0 0 10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:#fff;writing-mode:vertical-rl;
+  opacity:0;pointer-events:none;
+  transition:opacity .2s;
+  user-select:none;
+}
+.float-prev.hidden .float-tab{opacity:1;pointer-events:auto;}
 .float-lbl{font-size:10px;color:var(--pk);font-weight:700;margin-bottom:2px}
 .float-empty{width:155px;height:200px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3);text-align:center;line-height:1.5}
 .fp-slot{display:flex;flex-direction:column;align-items:center;width:155px;position:relative;isolation:isolate}
@@ -286,7 +305,9 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
 </div>
 
 <!-- フローティングプレビュー（スマホ） -->
-<div class="float-prev" id="float-prev" onclick="openPrevModal()">
+<div class="float-prev" id="float-prev">
+  <!-- 格納タブ（格納時のみ表示） -->
+  <div class="float-tab" id="float-tab" onclick="toggleFloat(event)">コーデ</div>
   <div class="float-lbl">コーデ</div>
   <div class="float-empty" id="float-empty">タップして<br>確認・保存</div>
   <div id="float-slots"></div>
@@ -377,7 +398,7 @@ async function loadData(){
   txt.textContent='0/'+total;
   for(const{file,label}of allFiles){
     try{
-      const res=await fetch(GITHUB_RAW+file+'?v=2');
+      const res=await fetch(GITHUB_RAW+file);
       if(!res.ok){loaded++;txt.textContent=loaded+'/'+total;continue;}
       const rows=parseCsv(await res.text());
       const src=/\/(AP_|APR_|OAP_|APSP_)/.test(file)?'aipri':'primagi';
@@ -570,6 +591,47 @@ function setColor(v){
 }
 
 renderBrandChips();render();loadData();
+
+/* ===== フローティングプレビュー：スワイプ格納 ===== */
+(function(){
+  const fp=document.getElementById('float-prev');
+  let startX=0,startY=0,isDragging=false,floatHidden=false;
+
+  function toggleFloat(e){
+    if(e)e.stopPropagation();
+    floatHidden=!floatHidden;
+    fp.classList.toggle('hidden',floatHidden);
+  }
+  window.toggleFloat=toggleFloat;
+
+  // タップ（スワイプではない）→ モーダルを開く or 格納解除
+  fp.addEventListener('click',e=>{
+    if(e.target.closest('.float-tab'))return; // タブはtoggleFloatが処理
+    if(floatHidden){toggleFloat(e);return;}
+    if(!isDragging)openPrevModal();
+  });
+
+  // タッチスワイプ検出
+  fp.addEventListener('touchstart',e=>{
+    startX=e.touches[0].clientX;
+    startY=e.touches[0].clientY;
+    isDragging=false;
+  },{passive:true});
+
+  fp.addEventListener('touchmove',e=>{
+    const dx=e.touches[0].clientX-startX;
+    const dy=e.touches[0].clientY-startY;
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>8)isDragging=true;
+  },{passive:true});
+
+  fp.addEventListener('touchend',e=>{
+    if(!isDragging)return;
+    const dx=e.changedTouches[0].clientX-startX;
+    if(dx>40&&!floatHidden){toggleFloat();} // 右スワイプ→格納
+    if(dx<-40&&floatHidden){toggleFloat();} // 左スワイプ→展開
+    isDragging=false;
+  },{passive:true});
+})();
 </script>
 </body>
 </html>
