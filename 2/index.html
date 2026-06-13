@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<meta name="robots" content="noindex, nofollow">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ミクコちゃん</title>
@@ -376,7 +377,7 @@ async function loadData(){
   txt.textContent='0/'+total;
   for(const{file,label}of allFiles){
     try{
-      const res=await fetch(GITHUB_RAW+file);
+      const res=await fetch(GITHUB_RAW+file+'?v=2');
       if(!res.ok){loaded++;txt.textContent=loaded+'/'+total;continue;}
       const rows=parseCsv(await res.text());
       const src=/\/(AP_|APR_|OAP_|APSP_)/.test(file)?'aipri':'primagi';
