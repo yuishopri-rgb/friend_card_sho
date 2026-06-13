@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ミクコちゃん</title>
 
+<!-- Content Security Policy: XSS二重防御 -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://aipri.jp https://www.takaratomy-arts.co.jp https://yuishopri.com; connect-src 'self' https://raw.githubusercontent.com; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+
 <!-- ファビコン・iOSアイコン -->
 <link rel="icon" href="icon.png" type="image/png">
 <link rel="apple-touch-icon" href="icon.png">
@@ -318,6 +321,21 @@ const CK={
 };
 function dc(n){for(const[c,kw]of Object.entries(CK))if(kw.some(k=>n.includes(k)))return c;return 'その他';}
 
+/* ===== セキュリティ対策 ===== */
+// HTMLエスケープ（XSS対策の基本）
+function esc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[c]));
+}
+// URLバリデーション: http/https のみ許可（javascript: などを弾く）
+function safeUrl(u){
+  if(!u) return '';
+  const trimmed = String(u).trim();
+  // 先頭が http:// または https:// のもののみ許可
+  return /^https?:\/\//i.test(trimmed) ? trimmed : '';
+}
+
 function parseCsv(text){
   const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim());
   const start=/^brand/i.test(lines[0])?1:0;
@@ -350,7 +368,7 @@ async function loadData(){
     manifest=await res.json();
   }catch(e){
     dot.className='dot';txt.textContent='manifestエラー';
-    document.getElementById('grid').innerHTML='<div class="msg">manifest.json読み込み失敗<br>'+e.message+'</div>';
+    document.getElementById('grid').innerHTML='<div class="msg">manifest.json読み込み失敗<br>'+esc(e.message)+'</div>';
     return;
   }
   const allFiles=[...manifest.files.aipri,...manifest.files.primagi];
@@ -366,7 +384,9 @@ async function loadData(){
       for(const[brand,cardId,name,part,imgUrl]of rows){
         const id=src+'_'+cardId+'_'+part;
         if(existing.has(id))continue;
-        ALL.push({id,code:cardId,name,part,src,brand,img:imgUrl.trim(),color:dc(name)});
+        // URLバリデーション: http(s)以外は弾く
+        const validImg = safeUrl(imgUrl);
+        ALL.push({id,code:cardId,name,part,src,brand,img:validImg,color:dc(name)});
         brands.add(brand);
       }
     }catch(e){}
@@ -411,11 +431,11 @@ function _render(){
     const pl=it.part==='アクセサリ'?'アクセ':it.part;
     // 最初の30件は eager、それ以降は lazy
     const loadAttr=i<30?'loading="eager" fetchpriority="high"':'loading="lazy" fetchpriority="low"';
-    return`<div class="ic${sel?' sel':''}" data-id="${it.id}">
+    return`<div class="ic${sel?' sel':''}" data-id="${esc(it.id)}">
       <div class="bdg bs ${it.src==='aipri'?'bai':'bpm'}">${it.src==='aipri'?'AI':'PM'}</div>
-      <div class="bdg bp b${it.part}">${pl}</div>
-      ${it.img?`<img src="${it.img}" alt="" ${loadAttr} decoding="async">`:`<div class="no-img">${it.code}</div>`}
-      <div class="nm">${it.name}</div>
+      <div class="bdg bp b${esc(it.part)}">${esc(pl)}</div>
+      ${it.img?`<img src="${esc(it.img)}" alt="" ${loadAttr} decoding="async">`:`<div class="no-img">${esc(it.code)}</div>`}
+      <div class="nm">${esc(it.name)}</div>
     </div>`;
   }).join('');
 }
@@ -459,7 +479,7 @@ function renderFloatPrev(){
 
   slotsEl.innerHTML=slots.map(([key,cls])=>{
     const it=coord[key];if(!it)return'';
-    return`<div class="fp-slot ${cls}"><img src="${it.img||''}" alt="" onerror="this.style.opacity='.1'"></div>`;
+    return`<div class="fp-slot ${cls}"><img src="${esc(it.img||'')}" alt="" onerror="this.style.opacity='.1'"></div>`;
   }).join('');
 
   sideStage.querySelectorAll('.fp-slot').forEach(e=>e.remove());
@@ -491,11 +511,11 @@ function renderPrevModal(){
     slots.map(([key,cls,lbl])=>{
       const it=coord[key];if(!it)return'';
       return`<div class="snap-row r-${cls}">
-        <div class="snap-img-wrap"><img src="${it.img||''}" alt="" onerror="this.style.opacity='.1'"></div>
+        <div class="snap-img-wrap"><img src="${esc(it.img||'')}" alt="" onerror="this.style.opacity='.1'"></div>
         <div class="snap-info">
-          <div class="snap-lbl">${lbl}</div>
-          <div class="snap-name">${it.name}</div>
-          <div class="snap-code">${it.code}  ·  ${it.brand}</div>
+          <div class="snap-lbl">${esc(lbl)}</div>
+          <div class="snap-name">${esc(it.name)}</div>
+          <div class="snap-code">${esc(it.code)}  ·  ${esc(it.brand)}</div>
         </div>
       </div>`;
     }).join('')
@@ -532,7 +552,12 @@ function rnd(){
 function renderBrandChips(){
   document.getElementById('brand-chips').innerHTML=
     `<div class="chip ${fBrand==='all'?'on':''}" onclick="setBrand('all')">すべて</div>`+
-    [...brands].map(b=>`<div class="chip ${fBrand===b?'on':''}" onclick="setBrand('${b.replace(/'/g,"\\'")}')">${b}</div>`).join('');
+    [...brands].map(b=>{
+      const safe=esc(b);
+      // setBrand に渡す文字列もエスケープ（属性内のシングルクオート対策）
+      const attr=esc(b).replace(/'/g,"\\'");
+      return`<div class="chip ${fBrand===b?'on':''}" onclick="setBrand('${attr}')">${safe}</div>`;
+    }).join('');
 }
 function setSrc(v){fSrc=v;['all','aipri','primagi'].forEach(k=>document.getElementById('src-'+k).classList.toggle('on',k===v));render();}
 function setPart(v){fPart=v;['all','ワンピース','トップス','ボトムス','シューズ','アクセサリ'].forEach(k=>document.getElementById('part-'+k).classList.toggle('on',k===v));render();}
