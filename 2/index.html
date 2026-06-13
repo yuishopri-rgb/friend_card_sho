@@ -102,7 +102,7 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
 .bアクセサリ{background:#FFF9C4;color:#827717}
 .msg{text-align:center;padding:30px 10px;color:var(--t3);font-size:12px;grid-column:1/-1}
 
-/* フローティングプレビュー（スマホ右下） */
+/* フローティングプレビュー（スマホ右下・2倍サイズ） */
 .float-prev{
   position:fixed;right:14px;bottom:calc(14px + var(--safe-bottom));
   width:170px;background:rgba(255,255,255,.97);
@@ -111,27 +111,7 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
   z-index:50;overflow:hidden;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;
   padding:8px 6px 6px;gap:0;
-  transition:transform .3s cubic-bezier(.4,0,.2,1);
-  touch-action:pan-y;
-  will-change:transform;
 }
-/* 格納状態：右にスライドアウト、タブだけ残す */
-.float-prev.hidden{
-  transform:translateX(calc(100% - 28px));
-}
-/* 格納タブ（格納時に左端に出る引き出しタブ） */
-.float-tab{
-  position:absolute;left:0;top:50%;transform:translateY(-50%);
-  width:24px;height:56px;
-  background:var(--pk);
-  border-radius:10px 0 0 10px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:10px;color:#fff;writing-mode:vertical-rl;
-  opacity:0;pointer-events:none;
-  transition:opacity .2s;
-  user-select:none;
-}
-.float-prev.hidden .float-tab{opacity:1;pointer-events:auto;}
 .float-lbl{font-size:10px;color:var(--pk);font-weight:700;margin-bottom:2px}
 .float-empty{width:155px;height:200px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3);text-align:center;line-height:1.5}
 .fp-slot{display:flex;flex-direction:column;align-items:center;width:155px;position:relative;isolation:isolate}
@@ -305,9 +285,7 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
 </div>
 
 <!-- フローティングプレビュー（スマホ） -->
-<div class="float-prev" id="float-prev">
-  <!-- 格納タブ（格納時のみ表示） -->
-  <div class="float-tab" id="float-tab" onclick="toggleFloat(event)">コーデ</div>
+<div class="float-prev" id="float-prev" onclick="openPrevModal()">
   <div class="float-lbl">コーデ</div>
   <div class="float-empty" id="float-empty">タップして<br>確認・保存</div>
   <div id="float-slots"></div>
@@ -329,32 +307,16 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
 
 <script>
 const GITHUB_RAW='https://raw.githubusercontent.com/yuishopri-rgb/e34tgea/main/';
-const MANIFEST_URL=GITHUB_RAW+'manifest.json';
-
-const CK={
-  'ピンク':['ピンク','ローズ','いちご','チェリー','ラズベリー','ベリー','コーラル','ハート'],
-  'ブルー':['ブルー','スカイ','ネイビー','みずいろ','ソーダ','マリン','アクア'],
-  'イエロー':['イエロー','ゴールド','レモン','ひまわり','サンシャイン','バナナ'],
-  'グリーン':['グリーン','ミント','リーフ','モスグリーン','エメラルド','マスカット'],
-  'パープル':['パープル','ラベンダー','バイオレット','ライラック','グレープ','ミッドナイト'],
-  'オレンジ':['オレンジ','アンバー','ピーチ','マカロン'],
-  'ホワイト':['ホワイト','ミルキー','パール','スノー','クリーム','シルバー','ウエディング','ウェディング'],
-  'ブラック':['ブラック','ダーク','ゴシック','ロック'],
-};
-function dc(n){for(const[c,kw]of Object.entries(CK))if(kw.some(k=>n.includes(k)))return c;return 'その他';}
 
 /* ===== セキュリティ対策 ===== */
-// HTMLエスケープ（XSS対策の基本）
 function esc(s){
   return String(s==null?'':s).replace(/[&<>"']/g, c => ({
     '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
   }[c]));
 }
-// URLバリデーション: http/https のみ許可（javascript: などを弾く）
 function safeUrl(u){
   if(!u) return '';
   const trimmed = String(u).trim();
-  // 先頭が http:// または https:// のもののみ許可
   return /^https?:\/\//i.test(trimmed) ? trimmed : '';
 }
 
@@ -383,39 +345,39 @@ async function loadData(){
   const dot=document.getElementById('load-dot');
   const txt=document.getElementById('load-txt');
   dot.className='dot loading';
-  let manifest;
-  try{
-    const res=await fetch(MANIFEST_URL);
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    manifest=await res.json();
-  }catch(e){
-    dot.className='dot';txt.textContent='manifestエラー';
-    document.getElementById('grid').innerHTML='<div class="msg">manifest.json読み込み失敗<br>'+esc(e.message)+'</div>';
-    return;
+  txt.textContent='読み込み中...';
+
+  // アイプリ・プリマジ 各1ファイルを並列fetch
+  const FILES=[
+    {url:GITHUB_RAW+'data/aipri_all.csv',  src:'aipri'},
+    {url:GITHUB_RAW+'data/primagi_all.csv', src:'primagi'},
+  ];
+  const existing=new Set();
+
+  const results = await Promise.allSettled(FILES.map(f=>fetch(f.url+'?v=1').then(r=>{
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.text().then(t=>({text:t,src:f.src}));
+  })));
+
+  for(const result of results){
+    if(result.status==='rejected'){continue;}
+    const {text,src}=result.value;
+    const rows=parseCsv(text);
+    // color列あり(6列)かなし(5列)か自動判定
+    for(const cols of rows){
+      const [brand,cardId,name,part,imgUrl,colorCol]=cols;
+      const id=src+'_'+cardId.trim()+'_'+part;
+      if(existing.has(id))continue;
+      existing.add(id);
+      const validImg=safeUrl(imgUrl);
+      const color=colorCol||'その他';
+      ALL.push({id,code:cardId.trim(),name,part,src,brand,img:validImg,color});
+      brands.add(brand);
+    }
   }
-  const allFiles=[...manifest.files.aipri,...manifest.files.primagi];
-  let loaded=0,total=allFiles.length;
-  txt.textContent='0/'+total;
-  for(const{file,label}of allFiles){
-    try{
-      const res=await fetch(GITHUB_RAW+file);
-      if(!res.ok){loaded++;txt.textContent=loaded+'/'+total;continue;}
-      const rows=parseCsv(await res.text());
-      const src=/\/(AP_|APR_|OAP_|APSP_)/.test(file)?'aipri':'primagi';
-      const existing=new Set(ALL.map(x=>x.id));
-      for(const[brand,cardId,name,part,imgUrl]of rows){
-        const id=src+'_'+cardId+'_'+part;
-        if(existing.has(id))continue;
-        // URLバリデーション: http(s)以外は弾く
-        const validImg = safeUrl(imgUrl);
-        ALL.push({id,code:cardId,name,part,src,brand,img:validImg,color:dc(name)});
-        brands.add(brand);
-      }
-    }catch(e){}
-    loaded++;txt.textContent=loaded+'/'+total;
-    renderBrandChips();render();
-  }
-  dot.className='dot ok';txt.textContent=ALL.length+'件';
+
+  dot.className='dot ok';
+  txt.textContent=ALL.length+'件';
   renderBrandChips();render();
 }
 
@@ -591,47 +553,6 @@ function setColor(v){
 }
 
 renderBrandChips();render();loadData();
-
-/* ===== フローティングプレビュー：スワイプ格納 ===== */
-(function(){
-  const fp=document.getElementById('float-prev');
-  let startX=0,startY=0,isDragging=false,floatHidden=false;
-
-  function toggleFloat(e){
-    if(e)e.stopPropagation();
-    floatHidden=!floatHidden;
-    fp.classList.toggle('hidden',floatHidden);
-  }
-  window.toggleFloat=toggleFloat;
-
-  // タップ（スワイプではない）→ モーダルを開く or 格納解除
-  fp.addEventListener('click',e=>{
-    if(e.target.closest('.float-tab'))return; // タブはtoggleFloatが処理
-    if(floatHidden){toggleFloat(e);return;}
-    if(!isDragging)openPrevModal();
-  });
-
-  // タッチスワイプ検出
-  fp.addEventListener('touchstart',e=>{
-    startX=e.touches[0].clientX;
-    startY=e.touches[0].clientY;
-    isDragging=false;
-  },{passive:true});
-
-  fp.addEventListener('touchmove',e=>{
-    const dx=e.touches[0].clientX-startX;
-    const dy=e.touches[0].clientY-startY;
-    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>8)isDragging=true;
-  },{passive:true});
-
-  fp.addEventListener('touchend',e=>{
-    if(!isDragging)return;
-    const dx=e.changedTouches[0].clientX-startX;
-    if(dx>40&&!floatHidden){toggleFloat();} // 右スワイプ→格納
-    if(dx<-40&&floatHidden){toggleFloat();} // 左スワイプ→展開
-    isDragging=false;
-  },{passive:true});
-})();
 </script>
 </body>
 </html>
