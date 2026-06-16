@@ -19,9 +19,7 @@
   --white:     #ffffff;
   --radius:    16px;
   --green:     #6dbe8d;
-  --green-bg:  #eafaf0;
   --red:       #e06f6f;
-  --red-bg:    #faeaea;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body {
@@ -115,7 +113,6 @@ body {
   outline: none; transition: border-color 0.2s;
 }
 .input-field:focus { border-color: var(--pink); background: var(--white); }
-.input-field.saved { border-color: var(--green); }
 .save-status { font-size: 10px; text-align: right; margin-top: 4px; color: var(--text-sub); min-height: 14px; }
 .save-status.ok  { color: var(--green); }
 .save-status.err { color: var(--red); }
@@ -141,14 +138,14 @@ const CONFIG = {
   cloudName:    "dx7x9lq1n",
   uploadPreset: "friend_card_gwryw",
   folder:       "friend_card_gwryw",
-  gasUrl:       ""https://script.google.com/macros/s/AKfycbzVZTWol9Vc2MPrdpVhbRxBJ3Rnjvii6zXMZV3ltmHG-JDc6FremiTLXO_1bnUO2nExvg/exec",
+  gasUrl:       "https://script.google.com/macros/s/AKfycbzVZTWol9Vc2MPrdpVhbRxBJ3Rnjvii6zXMZV3ltmHG-JDc6FremiTLXO_1bnUO2nExvg/exec",
   sheetName:    "test1",
 };
 // ========================================
 </script>
 
 <header class="header">
-  <div class="header-title"> フレカ登録</div>
+  <div class="header-title">📸 フレカ登録</div>
   <div class="header-sub">画像を選んでアップロードしてね</div>
 </header>
 
@@ -184,7 +181,6 @@ const CONFIG = {
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 let cards = [];
-let saveTimers = {};
 
 async function trimByQR(blob) {
   return new Promise(resolve => {
@@ -197,22 +193,17 @@ async function trimByQR(blob) {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
       URL.revokeObjectURL(objUrl);
-
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const qr = jsQR(imageData.data, imageData.width, imageData.height);
-
       if (!qr) { resolve(blob); return; }
-
       const ys = [qr.location.topLeftCorner.y, qr.location.topRightCorner.y,
                   qr.location.bottomLeftCorner.y, qr.location.bottomRightCorner.y];
       const qrTop    = Math.min(...ys);
       const qrBottom = Math.max(...ys);
       const qrHeight = qrBottom - qrTop;
-
       const newTop    = Math.max(0, Math.round(qrTop - qrHeight * 2.6));
       const newBottom = Math.min(canvas.height, Math.round(qrBottom + qrHeight * 0.6));
       const cropH     = newBottom - newTop;
-
       const out = document.createElement('canvas');
       out.width  = canvas.width;
       out.height = cropH;
@@ -229,13 +220,11 @@ async function uploadToCloudinary(blob, filename) {
   fd.append('file', blob, filename);
   fd.append('upload_preset', CONFIG.uploadPreset);
   fd.append('folder', CONFIG.folder);
-
   const res = await fetch(`https://api.cloudinary.com/v1_1/${CONFIG.cloudName}/image/upload`, {
     method: 'POST', body: fd
   });
   if (!res.ok) throw new Error('Upload failed: ' + res.status);
   const data = await res.json();
-
   return data.secure_url.replace(
     '/upload/',
     '/upload/c_crop,g_center,h_1800,w_1100,q_auto,f_auto/'
@@ -256,6 +245,18 @@ async function saveToSheet(card) {
   });
 }
 
+async function saveToSheetWithStatus(card) {
+  if (!card.url) return;
+  const statusEl = document.getElementById('save-status-' + card.id);
+  if (statusEl) { statusEl.textContent = '保存中…'; statusEl.className = 'save-status'; }
+  try {
+    await saveToSheet(card);
+    if (statusEl) { statusEl.textContent = '✓ 保存しました'; statusEl.className = 'save-status ok'; }
+  } catch (err) {
+    if (statusEl) { statusEl.textContent = '保存失敗'; statusEl.className = 'save-status err'; }
+  }
+}
+
 document.getElementById('file-input').addEventListener('change', e => {
   handleFiles([...e.target.files]);
   e.target.value = '';
@@ -273,23 +274,19 @@ uploadZone.addEventListener('drop', e => {
 async function handleFiles(files) {
   if (!files.length) return;
   document.getElementById('empty-state').style.display = 'none';
-
   const progressWrap  = document.getElementById('progress-wrap');
   const progressBar   = document.getElementById('progress-bar');
   const progressLabel = document.getElementById('progress-label');
   progressWrap.classList.add('show');
-
   let done = 0;
   const total = files.length;
   progressLabel.textContent = `アップロード中… 0 / ${total}`;
   progressBar.style.width = '0%';
-
   for (const file of files) {
     const id = Date.now() + Math.random();
     const card = { id, blob: null, url: null, charaName: '', codeName: '', status: 'uploading' };
     cards.push(card);
     renderCard(card);
-
     try {
       const trimmed = await trimByQR(file);
       card.blob = trimmed;
@@ -300,14 +297,12 @@ async function handleFiles(files) {
     } catch (err) {
       card.status = 'error';
     }
-
     done++;
     progressLabel.textContent = `アップロード中… ${done} / ${total}`;
     progressBar.style.width = (done / total * 100) + '%';
     updateCard(card);
     updateSections();
   }
-
   progressWrap.classList.remove('show');
   showToast(`${done}枚アップロード完了！`);
 }
@@ -359,14 +354,24 @@ function bindCardEvents(card) {
   const charaInput = document.getElementById('chara-' + card.id);
   const codeInput  = document.getElementById('code-'  + card.id);
   if (!charaInput || !codeInput) return;
+
   const onInput = () => {
     card.charaName = charaInput.value.trim();
     card.codeName  = codeInput.value.trim();
     refreshCardStyle(card);
-    scheduleAutoSave(card);
   };
+
+  const onBlur = () => {
+    card.charaName = charaInput.value.trim();
+    card.codeName  = codeInput.value.trim();
+    refreshCardStyle(card);
+    saveToSheetWithStatus(card);
+  };
+
   charaInput.addEventListener('input', onInput);
   codeInput.addEventListener('input', onInput);
+  charaInput.addEventListener('blur', onBlur);
+  codeInput.addEventListener('blur', onBlur);
 }
 
 function refreshCardStyle(card) {
@@ -404,21 +409,6 @@ function updateSections() {
   document.getElementById('pending-badge').textContent = pendingCount;
   document.getElementById('done-badge').textContent    = doneCount;
   document.getElementById('empty-state').style.display = (!pendingCount && !doneCount) ? '' : 'none';
-}
-
-function scheduleAutoSave(card) {
-  if (!card.url) return;
-  clearTimeout(saveTimers[card.id]);
-  const statusEl = document.getElementById('save-status-' + card.id);
-  if (statusEl) { statusEl.textContent = '…'; statusEl.className = 'save-status'; }
-  saveTimers[card.id] = setTimeout(async () => {
-    try {
-      await saveToSheet(card);
-      if (statusEl) { statusEl.textContent = '✓ 保存しました'; statusEl.className = 'save-status ok'; }
-    } catch (err) {
-      if (statusEl) { statusEl.textContent = '保存失敗'; statusEl.className = 'save-status err'; }
-    }
-  }, 1000);
 }
 
 function showToast(msg) {
