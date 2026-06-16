@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>フレカ登録</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pink:      #f9a8c9;
+  --pink-bg:   #fde8f3;
+  --pink-dark: #e06fa0;
+  --text:      #5c4a6e;
+  --text-sub:  #c4a8c4;
+  --border:    #f5ddef;
+  --bg:        #fef5fb;
+  --white:     #ffffff;
+  --radius:    16px;
+  --green:     #6dbe8d;
+  --green-bg:  #eafaf0;
+  --red:       #e06f6f;
+  --red-bg:    #faeaea;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'M PLUS Rounded 1c', 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: linear-gradient(160deg, #fff5fb 0%, #f5f0ff 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+.header {
+  background: linear-gradient(135deg, #f9b8d4 0%, #c9b8f0 100%);
+  padding: 16px 16px 14px;
+  position: sticky; top: 0; z-index: 20;
+}
+.header-title { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.header-sub { font-size: 12px; color: rgba(255,255,255,0.8); }
+.upload-zone {
+  margin: 16px 12px 0;
+  border: 2.5px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--white);
+  padding: 32px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+}
+.upload-zone.drag-over { border-color: var(--pink); background: var(--pink-bg); }
+.upload-zone input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.upload-icon { font-size: 40px; margin-bottom: 10px; }
+.upload-label { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.upload-sub { font-size: 12px; color: var(--text-sub); }
+.progress-wrap { margin: 14px 12px 0; display: none; }
+.progress-wrap.show { display: block; }
+.progress-label { font-size: 12px; color: var(--text-sub); margin-bottom: 6px; }
+.progress-bar-bg { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, #f9b8d4, #c9b8f0); border-radius: 99px; width: 0%; transition: width 0.3s; }
+.section-title {
+  font-size: 13px; font-weight: 700; color: var(--text-sub);
+  padding: 18px 14px 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.badge { background: var(--pink); color: #fff; font-size: 11px; font-weight: 700; border-radius: 99px; padding: 2px 8px; }
+.badge.done { background: var(--green); }
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 12px; }
+.card {
+  background: var(--white); border-radius: var(--radius); overflow: hidden;
+  box-shadow: 0 2px 10px rgba(249,168,201,0.15);
+  border: 2px solid transparent; transition: border-color 0.2s;
+}
+.card.incomplete { border-color: var(--pink); }
+.card.complete   { border-color: var(--green); }
+.card.error      { border-color: var(--red); }
+.card-img-wrap {
+  width: 100%; padding-top: 105%;
+  position: relative; overflow: hidden;
+  background: linear-gradient(160deg, #fde8f3 0%, #e8e4f8 100%);
+}
+.card-img-wrap img {
+  position: absolute; top: -10%; left: 0;
+  width: 100%; height: 200%;
+  object-fit: cover; object-position: top center;
+}
+.card-img-wrap .uploading-overlay {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.7);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+.card-status-badge {
+  position: absolute; top: 8px; right: 8px;
+  font-size: 10px; font-weight: 700;
+  border-radius: 99px; padding: 3px 8px;
+  background: var(--pink); color: #fff;
+}
+.card-status-badge.done  { background: var(--green); }
+.card-status-badge.error { background: var(--red); }
+.card-body { padding: 10px 10px 12px; }
+.input-row { margin-bottom: 8px; }
+.input-label { font-size: 10px; font-weight: 700; color: var(--text-sub); margin-bottom: 4px; }
+.input-field {
+  width: 100%; border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 7px 10px;
+  font-family: inherit; font-size: 13px;
+  color: var(--text); background: var(--bg);
+  outline: none; transition: border-color 0.2s;
+}
+.input-field:focus { border-color: var(--pink); background: var(--white); }
+.input-field.saved { border-color: var(--green); }
+.save-status { font-size: 10px; text-align: right; margin-top: 4px; color: var(--text-sub); min-height: 14px; }
+.save-status.ok  { color: var(--green); }
+.save-status.err { color: var(--red); }
+.empty-state { text-align: center; padding: 48px 16px; color: var(--text-sub); font-size: 14px; line-height: 2; }
+.empty-state .ico { display: block; font-size: 40px; margin-bottom: 10px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { display: inline-block; animation: spin 0.8s linear infinite; }
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #444; color: #fff; font-size: 13px;
+  border-radius: 99px; padding: 10px 20px;
+  opacity: 0; transition: opacity 0.3s;
+  white-space: nowrap; z-index: 999; pointer-events: none;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<script>
+// ========== ここだけ書き換える ==========
+const CONFIG = {
+  cloudName:    "dx7x9lq1n",
+  uploadPreset: "your_preset_name",
+  folder:       "ゆいしょ",
+  gasUrl:       "https://script.google.com/macros/s/YOUR_GAS_ID/exec",
+  sheetName:    "ゆいしょ",
+};
+// ========================================
+</script>
+
+<header class="header">
+  <div class="header-title">📸 フレカ登録</div>
+  <div class="header-sub">画像を選んでアップロードしてね</div>
+</header>
+
+<div class="upload-zone" id="upload-zone">
+  <input type="file" id="file-input" accept="image/*" multiple>
+  <div class="upload-icon">🖼️</div>
+  <div class="upload-label">画像を選択</div>
+  <div class="upload-sub">カメラロールから複数選べます</div>
+</div>
+
+<div class="progress-wrap" id="progress-wrap">
+  <div class="progress-label" id="progress-label">アップロード中… 0 / 0</div>
+  <div class="progress-bar-bg"><div class="progress-bar" id="progress-bar"></div></div>
+</div>
+
+<div id="pending-section" style="display:none">
+  <div class="section-title">未入力 <span class="badge" id="pending-badge">0</span></div>
+  <div class="grid" id="pending-grid"></div>
+</div>
+
+<div id="done-section" style="display:none">
+  <div class="section-title">登録済み <span class="badge done" id="done-badge">0</span></div>
+  <div class="grid" id="done-grid"></div>
+</div>
+
+<div class="empty-state" id="empty-state">
+  <span class="ico">💕</span>
+  上の画像ボタンから<br>フレカ写真を選んでね
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+let cards = [];
+let saveTimers = {};
+
+async function trimByQR(blob) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const objUrl = URL.createObjectURL(blob);
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width  = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(objUrl);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const qr = jsQR(imageData.data, imageData.width, imageData.height);
+
+      if (!qr) { resolve(blob); return; }
+
+      const ys = [qr.location.topLeftCorner.y, qr.location.topRightCorner.y,
+                  qr.location.bottomLeftCorner.y, qr.location.bottomRightCorner.y];
+      const qrTop    = Math.min(...ys);
+      const qrBottom = Math.max(...ys);
+      const qrHeight = qrBottom - qrTop;
+
+      const newTop    = Math.max(0, Math.round(qrTop - qrHeight * 2.6));
+      const newBottom = Math.min(canvas.height, Math.round(qrBottom + qrHeight * 0.6));
+      const cropH     = newBottom - newTop;
+
+      const out = document.createElement('canvas');
+      out.width  = canvas.width;
+      out.height = cropH;
+      out.getContext('2d').drawImage(canvas, 0, newTop, canvas.width, cropH, 0, 0, canvas.width, cropH);
+      out.toBlob(b => resolve(b || blob), 'image/jpeg', 0.92);
+    };
+    img.onerror = () => resolve(blob);
+    img.src = objUrl;
+  });
+}
+
+async function uploadToCloudinary(blob, filename) {
+  const fd = new FormData();
+  fd.append('file', blob, filename);
+  fd.append('upload_preset', CONFIG.uploadPreset);
+  fd.append('folder', CONFIG.folder);
+
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CONFIG.cloudName}/image/upload`, {
+    method: 'POST', body: fd
+  });
+  if (!res.ok) throw new Error('Upload failed: ' + res.status);
+  const data = await res.json();
+
+  return data.secure_url.replace(
+    '/upload/',
+    '/upload/c_crop,g_center,h_1800,w_1100,q_auto,f_auto/'
+  );
+}
+
+async function saveToSheet(card) {
+  await fetch(CONFIG.gasUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sheetName: CONFIG.sheetName,
+      url:       card.url       || "",
+      charaName: card.charaName || "",
+      codeName:  card.codeName  || "",
+    }),
+    mode: 'no-cors'
+  });
+}
+
+document.getElementById('file-input').addEventListener('change', e => {
+  handleFiles([...e.target.files]);
+  e.target.value = '';
+});
+
+const uploadZone = document.getElementById('upload-zone');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  handleFiles([...e.dataTransfer.files].filter(f => f.type.startsWith('image/')));
+});
+
+async function handleFiles(files) {
+  if (!files.length) return;
+  document.getElementById('empty-state').style.display = 'none';
+
+  const progressWrap  = document.getElementById('progress-wrap');
+  const progressBar   = document.getElementById('progress-bar');
+  const progressLabel = document.getElementById('progress-label');
+  progressWrap.classList.add('show');
+
+  let done = 0;
+  const total = files.length;
+  progressLabel.textContent = `アップロード中… 0 / ${total}`;
+  progressBar.style.width = '0%';
+
+  for (const file of files) {
+    const id = Date.now() + Math.random();
+    const card = { id, blob: null, url: null, charaName: '', codeName: '', status: 'uploading' };
+    cards.push(card);
+    renderCard(card);
+
+    try {
+      const trimmed = await trimByQR(file);
+      card.blob = trimmed;
+      const url = await uploadToCloudinary(trimmed, file.name);
+      card.url    = url;
+      card.status = 'done';
+      await saveToSheet(card).catch(() => {});
+    } catch (err) {
+      card.status = 'error';
+    }
+
+    done++;
+    progressLabel.textContent = `アップロード中… ${done} / ${total}`;
+    progressBar.style.width = (done / total * 100) + '%';
+    updateCard(card);
+    updateSections();
+  }
+
+  progressWrap.classList.remove('show');
+  showToast(`${done}枚アップロード完了！`);
+}
+
+function renderCard(card) {
+  const grid = document.getElementById('pending-grid');
+  const el = document.createElement('div');
+  el.className = 'card incomplete';
+  el.id = 'card-' + card.id;
+  el.innerHTML = cardHTML(card);
+  grid.appendChild(el);
+  document.getElementById('pending-section').style.display = '';
+  bindCardEvents(card);
+  updateSections();
+}
+
+function cardHTML(card) {
+  const imgSrc = card.blob ? URL.createObjectURL(card.blob) : '';
+  const statusLabel = card.status === 'uploading' ? '⏳' : card.status === 'error' ? 'エラー' : '未入力';
+  const statusClass = card.status === 'error' ? 'error' : '';
+  return `
+    <div class="card-img-wrap">
+      ${imgSrc ? `<img src="${imgSrc}" alt="">` : ''}
+      ${card.status === 'uploading' ? `<div class="uploading-overlay"><span class="spin">⏳</span></div>` : ''}
+      <div class="card-status-badge ${statusClass}" id="badge-${card.id}">${statusLabel}</div>
+    </div>
+    <div class="card-body">
+      <div class="input-row">
+        <div class="input-label">キャラ名</div>
+        <input class="input-field" id="chara-${card.id}" type="text" placeholder="例：ゆいしょ" value="${esc(card.charaName)}">
+      </div>
+      <div class="input-row">
+        <div class="input-label">コーデ名</div>
+        <input class="input-field" id="code-${card.id}" type="text" placeholder="コーデ名を入力" value="${esc(card.codeName)}">
+      </div>
+      <div class="save-status" id="save-status-${card.id}"></div>
+    </div>`;
+}
+
+function updateCard(card) {
+  const el = document.getElementById('card-' + card.id);
+  if (!el) return;
+  el.innerHTML = cardHTML(card);
+  bindCardEvents(card);
+  refreshCardStyle(card);
+}
+
+function bindCardEvents(card) {
+  const charaInput = document.getElementById('chara-' + card.id);
+  const codeInput  = document.getElementById('code-'  + card.id);
+  if (!charaInput || !codeInput) return;
+  const onInput = () => {
+    card.charaName = charaInput.value.trim();
+    card.codeName  = codeInput.value.trim();
+    refreshCardStyle(card);
+    scheduleAutoSave(card);
+  };
+  charaInput.addEventListener('input', onInput);
+  codeInput.addEventListener('input', onInput);
+}
+
+function refreshCardStyle(card) {
+  const el = document.getElementById('card-' + card.id);
+  if (!el) return;
+  const isComplete = card.charaName && card.codeName;
+  el.className = 'card ' + (card.status === 'error' ? 'error' : isComplete ? 'complete' : 'incomplete');
+  const badge = document.getElementById('badge-' + card.id);
+  if (badge) {
+    if (card.status === 'error')  { badge.textContent = 'エラー'; badge.className = 'card-status-badge error'; }
+    else if (isComplete)          { badge.textContent = '登録済'; badge.className = 'card-status-badge done'; }
+    else                          { badge.textContent = '未入力'; badge.className = 'card-status-badge'; }
+  }
+  moveCardToSection(card);
+  updateSections();
+}
+
+function moveCardToSection(card) {
+  const el = document.getElementById('card-' + card.id);
+  if (!el) return;
+  const isComplete = card.charaName && card.codeName && card.status !== 'error';
+  const targetGrid = isComplete
+    ? document.getElementById('done-grid')
+    : document.getElementById('pending-grid');
+  if (el.parentElement !== targetGrid) targetGrid.appendChild(el);
+}
+
+function updateSections() {
+  const pendingGrid  = document.getElementById('pending-grid');
+  const doneGrid     = document.getElementById('done-grid');
+  const pendingCount = pendingGrid.children.length;
+  const doneCount    = doneGrid.children.length;
+  document.getElementById('pending-section').style.display = pendingCount ? '' : 'none';
+  document.getElementById('done-section').style.display    = doneCount    ? '' : 'none';
+  document.getElementById('pending-badge').textContent = pendingCount;
+  document.getElementById('done-badge').textContent    = doneCount;
+  document.getElementById('empty-state').style.display = (!pendingCount && !doneCount) ? '' : 'none';
+}
+
+function scheduleAutoSave(card) {
+  if (!card.url) return;
+  clearTimeout(saveTimers[card.id]);
+  const statusEl = document.getElementById('save-status-' + card.id);
+  if (statusEl) { statusEl.textContent = '…'; statusEl.className = 'save-status'; }
+  saveTimers[card.id] = setTimeout(async () => {
+    try {
+      await saveToSheet(card);
+      if (statusEl) { statusEl.textContent = '✓ 保存しました'; statusEl.className = 'save-status ok'; }
+    } catch (err) {
+      if (statusEl) { statusEl.textContent = '保存失敗'; statusEl.className = 'save-status err'; }
+    }
+  }, 1000);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
