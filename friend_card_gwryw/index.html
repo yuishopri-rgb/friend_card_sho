@@ -31,8 +31,6 @@ body {
   min-height: 100vh;
   padding-bottom: 40px;
 }
-
-/* 認証画面 */
 .auth-screen {
   position: fixed; inset: 0;
   background: linear-gradient(160deg, #fff5fb 0%, #f5f0ff 100%);
@@ -66,8 +64,6 @@ body {
 }
 .auth-btn:disabled { opacity: 0.6; cursor: default; }
 .auth-error { font-size: 12px; color: var(--red); margin-top: 8px; text-align: center; min-height: 18px; }
-
-/* メイン */
 .header {
   background: linear-gradient(135deg, #f9b8d4 0%, #c9b8f0 100%);
   padding: 16px 16px 14px;
@@ -172,21 +168,25 @@ body {
 <script>
 // ========== ここだけ書き換える ==========
 const CONFIG = {
+  appName:      "フレカ登録",
   cloudName:    "dx7x9lq1n",
   uploadPreset: "friend_card_gwryw",
   folder:       "friend_card_gwryw",
   gasUrl:       "https://script.google.com/macros/s/AKfycbzVZTWol9Vc2MPrdpVhbRxBJ3Rnjvii6zXMZV3ltmHG-JDc6FremiTLXO_1bnUO2nExvg/exec",
   sheetName:    "test1",
 };
-const AUTH_TOKEN_KEY = 'freca_auth_token_gwryw'; // ユーザーごとに変える
-const AUTH_DATE_KEY  = 'freca_auth_date_gwryw';  // ユーザーごとに変える
+const AUTH_TOKEN_KEY = 'freca_auth_token_gwryw';
+const AUTH_DATE_KEY  = 'freca_auth_date_gwryw';
 // ========================================
+
+// アプリ名をタイトルに反映
+document.title = CONFIG.appName;
 </script>
 
 <!-- 認証画面 -->
 <div class="auth-screen" id="auth-screen">
   <div class="auth-logo">💕</div>
-  <div class="auth-title">フレカ登録</div>
+  <div class="auth-title" id="auth-app-name"></div>
   <div class="auth-sub">パスワードを入力してね</div>
   <div class="auth-box">
     <div class="auth-label">パスワード</div>
@@ -196,10 +196,10 @@ const AUTH_DATE_KEY  = 'freca_auth_date_gwryw';  // ユーザーごとに変え�
   </div>
 </div>
 
-<!-- メインコンテンツ（認証後に表示） -->
+<!-- メインコンテンツ -->
 <div id="main-content" style="display:none">
   <header class="header">
-    <div class="header-title">📸 フレカ登録</div>
+    <div class="header-title" id="header-title"></div>
     <div class="header-sub">画像を選んでアップロードしてね</div>
   </header>
 
@@ -241,21 +241,22 @@ const AUTH_DATE_KEY  = 'freca_auth_date_gwryw';  // ユーザーごとに変え�
 <script>
 const cardMap = {};
 
+// アプリ名セット
+document.getElementById('auth-app-name').textContent = CONFIG.appName;
+document.getElementById('header-title') && (document.getElementById('header-title').textContent = '📸 ' + CONFIG.appName);
+
 // ===== 認証 =====
-function getToday() {
-  return new Date().toISOString().slice(0, 10);
-}
+function getToday() { return new Date().toISOString().slice(0, 10); }
 
 async function checkAuth() {
   const token = localStorage.getItem(AUTH_TOKEN_KEY);
   const date  = localStorage.getItem(AUTH_DATE_KEY);
   if (!token || date !== getToday()) return false;
   try {
-    const res = await fetch(CONFIG.gasUrl, {
-  method: 'POST',
-  headers: { 'Content-Type': 'text/plain' },
-  body: JSON.stringify({ action: 'verify', token }),
-
+    const res  = await fetch(CONFIG.gasUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'verify', token }),
     });
     const data = await res.json();
     return data.status === 'ok';
@@ -267,14 +268,12 @@ async function submitPassword() {
   if (!pw) return;
   const btn = document.getElementById('pw-btn');
   const err = document.getElementById('pw-error');
-  btn.disabled = true;
-  btn.textContent = '確認中…';
-  err.textContent = '';
+  btn.disabled = true; btn.textContent = '確認中…'; err.textContent = '';
   try {
-    const res = await fetch(CONFIG.gasUrl, {
-  method: 'POST',
-  headers: { 'Content-Type': 'text/plain' },
-  body: JSON.stringify({ action: 'auth', password: pw }),
+    const res  = await fetch(CONFIG.gasUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'auth', password: pw }),
     });
     const data = await res.json();
     if (data.status === 'ok') {
@@ -285,13 +284,11 @@ async function submitPassword() {
       onAuthSuccess();
     } else {
       err.textContent = 'パスワードが違います';
-      btn.disabled = false;
-      btn.textContent = 'はいる';
+      btn.disabled = false; btn.textContent = 'はいる';
     }
   } catch {
     err.textContent = '通信エラーが発生しました';
-    btn.disabled = false;
-    btn.textContent = 'はいる';
+    btn.disabled = false; btn.textContent = 'はいる';
   }
 }
 
@@ -303,7 +300,6 @@ async function initAuth() {
     onAuthSuccess();
   } else {
     document.getElementById('auth-screen').style.display = 'flex';
-    document.getElementById('main-content').style.display = 'none';
     document.getElementById('pw-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') submitPassword();
     });
@@ -313,15 +309,13 @@ async function initAuth() {
 function onAuthSuccess() {
   loadExistingCards();
   document.getElementById('file-input').addEventListener('change', e => {
-    handleFiles([...e.target.files]);
-    e.target.value = '';
+    handleFiles([...e.target.files]); e.target.value = '';
   });
   const uploadZone = document.getElementById('upload-zone');
   uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
   uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
   uploadZone.addEventListener('drop', e => {
-    e.preventDefault();
-    uploadZone.classList.remove('drag-over');
+    e.preventDefault(); uploadZone.classList.remove('drag-over');
     handleFiles([...e.dataTransfer.files].filter(f => f.type.startsWith('image/')));
   });
 }
@@ -355,8 +349,7 @@ async function trimByQR(blob) {
     const objUrl = URL.createObjectURL(blob);
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      canvas.width  = img.naturalWidth;
-      canvas.height = img.naturalHeight;
+      canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
       URL.revokeObjectURL(objUrl);
@@ -372,8 +365,7 @@ async function trimByQR(blob) {
       const newBottom = Math.min(canvas.height, Math.round(qrBottom + qrHeight * 0.6));
       const cropH     = newBottom - newTop;
       const out = document.createElement('canvas');
-      out.width  = canvas.width;
-      out.height = cropH;
+      out.width = canvas.width; out.height = cropH;
       out.getContext('2d').drawImage(canvas, 0, newTop, canvas.width, cropH, 0, 0, canvas.width, cropH);
       out.toBlob(b => resolve(b || blob), 'image/webp', 0.92);
     };
@@ -400,7 +392,7 @@ async function uploadToCloudinary(blob, filename) {
 async function saveToSheet(card) {
   await fetch(CONFIG.gasUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({
       action: 'save',
       sheetName: CONFIG.sheetName,
@@ -431,13 +423,12 @@ async function handleFiles(files) {
   const progressBar   = document.getElementById('progress-bar');
   const progressLabel = document.getElementById('progress-label');
   progressWrap.classList.add('show');
-  let done = 0;
-  const total = files.length;
+  let done = 0; const total = files.length;
   progressLabel.textContent = `アップロード中… 0 / ${total}`;
   progressBar.style.width = '0%';
   for (const file of files) {
     const id = 'new-' + Date.now() + '-' + Math.random();
-    const card = { id, blob: null, url: null, charaName: '', codeName: '', status: 'uploading', fromSheet: false };
+    const card = { id, blob: null, url: null, charaName: '', codeName: '', status: 'uploading' };
     cardMap[id] = card;
     renderCard(card);
     try {
@@ -450,20 +441,16 @@ async function handleFiles(files) {
     done++;
     progressLabel.textContent = `アップロード中… ${done} / ${total}`;
     progressBar.style.width = (done / total * 100) + '%';
-    updateCardImage(card);
-    updateCardBadge(card);
-    updateCardStyle(card);
-    moveCardToSection(card);
-    updateSections();
+    updateCardImage(card); updateCardBadge(card);
+    updateCardStyle(card); moveCardToSection(card); updateSections();
   }
   progressWrap.classList.remove('show');
   showToast(`${done}枚アップロード完了！`);
 }
 
-// ===== カード描画 =====
+// ===== カード描画（初回のみ） =====
 function renderCard(card) {
   const el = document.createElement('div');
-  el.className = 'card incomplete';
   el.id = 'card-' + card.id;
 
   const imgWrap = document.createElement('div');
@@ -472,25 +459,18 @@ function renderCard(card) {
 
   if (card.url) {
     const img = document.createElement('img');
-    img.src = card.url; img.alt = '';
-    imgWrap.appendChild(img);
+    img.src = card.url; img.alt = ''; imgWrap.appendChild(img);
   } else if (card.blob) {
     const img = document.createElement('img');
-    img.src = URL.createObjectURL(card.blob); img.alt = '';
-    imgWrap.appendChild(img);
+    img.src = URL.createObjectURL(card.blob); img.alt = ''; imgWrap.appendChild(img);
   }
   if (card.status === 'uploading') {
-    const overlay = document.createElement('div');
-    overlay.className = 'uploading-overlay';
-    overlay.id = 'overlay-' + card.id;
-    overlay.innerHTML = '<span class="spin">⏳</span>';
-    imgWrap.appendChild(overlay);
+    const ov = document.createElement('div');
+    ov.className = 'uploading-overlay'; ov.id = 'overlay-' + card.id;
+    ov.innerHTML = '<span class="spin">⏳</span>'; imgWrap.appendChild(ov);
   }
   const badge = document.createElement('div');
-  badge.className = 'card-status-badge';
-  badge.id = 'badge-' + card.id;
-  badge.textContent = card.status === 'uploading' ? '⏳' : card.status === 'error' ? 'エラー' : '未入力';
-  imgWrap.appendChild(badge);
+  badge.id = 'badge-' + card.id; imgWrap.appendChild(badge);
 
   const body = document.createElement('div');
   body.className = 'card-body';
@@ -499,10 +479,8 @@ function renderCard(card) {
   charaRow.className = 'input-row';
   charaRow.innerHTML = '<div class="input-label">キャラ名</div>';
   const charaInput = document.createElement('input');
-  charaInput.className = 'input-field';
-  charaInput.id = 'chara-' + card.id;
-  charaInput.type = 'text';
-  charaInput.placeholder = '例：ゆいしょ';
+  charaInput.className = 'input-field'; charaInput.id = 'chara-' + card.id;
+  charaInput.type = 'text'; charaInput.placeholder = '例：ゆいしょ';
   charaInput.value = card.charaName || '';
   charaRow.appendChild(charaInput);
 
@@ -510,22 +488,16 @@ function renderCard(card) {
   codeRow.className = 'input-row';
   codeRow.innerHTML = '<div class="input-label">コーデ名</div>';
   const codeInput = document.createElement('input');
-  codeInput.className = 'input-field';
-  codeInput.id = 'code-' + card.id;
-  codeInput.type = 'text';
-  codeInput.placeholder = 'コーデ名を入力';
+  codeInput.className = 'input-field'; codeInput.id = 'code-' + card.id;
+  codeInput.type = 'text'; codeInput.placeholder = 'コーデ名を入力';
   codeInput.value = card.codeName || '';
   codeRow.appendChild(codeInput);
 
   const saveStatus = document.createElement('div');
-  saveStatus.className = 'save-status';
-  saveStatus.id = 'save-status-' + card.id;
+  saveStatus.className = 'save-status'; saveStatus.id = 'save-status-' + card.id;
 
-  body.appendChild(charaRow);
-  body.appendChild(codeRow);
-  body.appendChild(saveStatus);
-  el.appendChild(imgWrap);
-  el.appendChild(body);
+  body.appendChild(charaRow); body.appendChild(codeRow); body.appendChild(saveStatus);
+  el.appendChild(imgWrap); el.appendChild(body);
 
   charaInput.addEventListener('input', () => {
     card.charaName = charaInput.value.trim();
@@ -538,22 +510,23 @@ function renderCard(card) {
   charaInput.addEventListener('blur', () => {
     card.charaName = charaInput.value.trim();
     updateCardBadge(card); updateCardStyle(card);
-    moveCardToSection(card); updateSections();
-    saveToSheetWithStatus(card);
+    moveCardToSection(card); updateSections(); saveToSheetWithStatus(card);
   });
   codeInput.addEventListener('blur', () => {
     card.codeName = codeInput.value.trim();
     updateCardBadge(card); updateCardStyle(card);
-    moveCardToSection(card); updateSections();
-    saveToSheetWithStatus(card);
+    moveCardToSection(card); updateSections(); saveToSheetWithStatus(card);
   });
 
-  const isComplete = card.charaName && card.codeName;
+  // 初期スタイル適用（ここが修正ポイント：初回から正しく判定）
+  updateCardBadge(card);
+  updateCardStyle(card);
+
+  const isComplete = !!(card.charaName && card.codeName);
   const targetGrid = isComplete
     ? document.getElementById('done-grid')
     : document.getElementById('pending-grid');
   targetGrid.appendChild(el);
-  updateCardStyle(card);
   updateSections();
 }
 
@@ -562,12 +535,11 @@ function updateCardImage(card) {
   if (!imgWrap) return;
   const existingImg = imgWrap.querySelector('img');
   if (existingImg) existingImg.remove();
-  const overlay = document.getElementById('overlay-' + card.id);
-  if (overlay) overlay.remove();
+  const ov = document.getElementById('overlay-' + card.id);
+  if (ov) ov.remove();
   if (card.url || card.blob) {
     const img = document.createElement('img');
-    img.src = card.url || URL.createObjectURL(card.blob);
-    img.alt = '';
+    img.src = card.url || URL.createObjectURL(card.blob); img.alt = '';
     imgWrap.insertBefore(img, imgWrap.firstChild);
   }
 }
@@ -575,7 +547,7 @@ function updateCardImage(card) {
 function updateCardBadge(card) {
   const badge = document.getElementById('badge-' + card.id);
   if (!badge) return;
-  const isComplete = card.charaName && card.codeName;
+  const isComplete = !!(card.charaName && card.codeName);
   if (card.status === 'error')  { badge.textContent = 'エラー'; badge.className = 'card-status-badge error'; }
   else if (isComplete)          { badge.textContent = '登録済'; badge.className = 'card-status-badge done'; }
   else                          { badge.textContent = '未入力'; badge.className = 'card-status-badge'; }
@@ -584,14 +556,14 @@ function updateCardBadge(card) {
 function updateCardStyle(card) {
   const el = document.getElementById('card-' + card.id);
   if (!el) return;
-  const isComplete = card.charaName && card.codeName;
+  const isComplete = !!(card.charaName && card.codeName);
   el.className = 'card ' + (card.status === 'error' ? 'error' : isComplete ? 'complete' : 'incomplete');
 }
 
 function moveCardToSection(card) {
   const el = document.getElementById('card-' + card.id);
   if (!el) return;
-  const isComplete = card.charaName && card.codeName && card.status !== 'error';
+  const isComplete = !!(card.charaName && card.codeName) && card.status !== 'error';
   const targetGrid = isComplete
     ? document.getElementById('done-grid')
     : document.getElementById('pending-grid');
@@ -612,12 +584,10 @@ function updateSections() {
 
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-// ===== 起動 =====
 initAuth();
 </script>
 </body>
