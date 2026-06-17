@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Friend Card</title>
+</head>
+
+<body>
+
+<h1>Friend Card</h1>
+
+<button id="createBtn">
+ユーザー作成
+</button>
+
+<hr>
+
+<input
+type="file"
+id="fileInput">
+
+<button id="uploadBtn">
+画像アップロード
+</button>
+
+<div id="result"></div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+
+<script>
+
+document
+.getElementById("createBtn")
+.onclick = async ()=>{
+
+  const data =
+    await createUser();
+
+  if(data.status!=="ok"){
+    alert("失敗");
+    return;
+  }
+
+  location.href =
+    data.url;
+};
+
+document
+.getElementById("uploadBtn")
+.onclick = async ()=>{
+
+  const file =
+    document
+    .getElementById("fileInput")
+    .files[0];
+
+  if(!file){
+    alert("画像選択");
+    return;
+  }
+
+  const result =
+    await uploadImage(file);
+
+  document
+    .getElementById("result")
+    .innerText =
+      result.secure_url;
+};
+
+</script>
+
+</body>
+</html>
