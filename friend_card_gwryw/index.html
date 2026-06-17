@@ -9,49 +9,43 @@
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --pink:      #f9a8c9;
-  --pink-bg:   #fde8f3;
-  --text:      #5c4a6e;
-  --text-sub:  #c4a8c4;
-  --border:    #f5ddef;
-  --bg:        #fef5fb;
-  --white:     #ffffff;
-  --radius:    16px;
-  --green:     #6dbe8d;
-  --red:       #e06f6f;
+  --pink:    #f9a8c9;
+  --pink-bg: #fde8f3;
+  --text:    #5c4a6e;
+  --text-sub:#c4a8c4;
+  --border:  #f5ddef;
+  --bg:      #fef5fb;
+  --white:   #ffffff;
+  --radius:  16px;
+  --green:   #6dbe8d;
+  --red:     #e06f6f;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body {
   font-family: 'M PLUS Rounded 1c', 'Hiragino Kaku Gothic ProN', sans-serif;
   background: linear-gradient(160deg, #fff5fb 0%, #f5f0ff 100%);
-  background-attachment: fixed;
-  color: var(--text);
-  max-width: 480px;
-  margin: 0 auto;
-  min-height: 100vh;
-  padding-bottom: 40px;
+  background-attachment: fixed; color: var(--text);
+  max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 40px;
 }
+
+/* 認証 */
 .auth-screen {
   position: fixed; inset: 0;
   background: linear-gradient(160deg, #fff5fb 0%, #f5f0ff 100%);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
   z-index: 999; padding: 32px;
 }
 .auth-logo { font-size: 48px; margin-bottom: 16px; }
 .auth-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .auth-sub { font-size: 13px; color: var(--text-sub); margin-bottom: 32px; }
 .auth-box {
-  width: 100%; max-width: 320px;
-  background: var(--white); border-radius: 20px;
-  padding: 24px; box-shadow: 0 4px 24px rgba(249,168,201,0.2);
+  width: 100%; max-width: 320px; background: var(--white);
+  border-radius: 20px; padding: 24px; box-shadow: 0 4px 24px rgba(249,168,201,0.2);
 }
 .auth-label { font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 8px; }
 .auth-input {
-  width: 100%; border: 1.5px solid var(--border);
-  border-radius: 10px; padding: 12px 14px;
-  font-family: inherit; font-size: 16px;
-  color: var(--text); background: var(--bg);
+  width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px;
+  font-family: inherit; font-size: 16px; color: var(--text); background: var(--bg);
   outline: none; margin-bottom: 12px;
 }
 .auth-input:focus { border-color: var(--pink); background: var(--white); }
@@ -59,77 +53,112 @@ body {
   width: 100%; padding: 13px;
   background: linear-gradient(135deg, #f9b8d4, #c9b8f0);
   border: none; border-radius: 10px;
-  font-family: inherit; font-size: 16px; font-weight: 700;
-  color: #fff; cursor: pointer;
+  font-family: inherit; font-size: 16px; font-weight: 700; color: #fff; cursor: pointer;
 }
 .auth-btn:disabled { opacity: 0.6; cursor: default; }
 .auth-error { font-size: 12px; color: var(--red); margin-top: 8px; text-align: center; min-height: 18px; }
+
+/* ヘッダー */
 .header {
   background: linear-gradient(135deg, #f9b8d4 0%, #c9b8f0 100%);
-  padding: 16px 16px 14px;
-  position: sticky; top: 0; z-index: 20;
+  padding: 16px 16px 14px; position: sticky; top: 0; z-index: 20;
 }
-.header-title { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.header-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.header-title { flex: 1; font-size: 20px; font-weight: 700; color: #fff; }
 .header-sub { font-size: 12px; color: rgba(255,255,255,0.8); }
+
+/* 削除モードバー */
+.delete-bar {
+  display: none; align-items: center; justify-content: space-between;
+  background: #fff0f0; border-bottom: 1px solid #fcc;
+  padding: 10px 14px; gap: 10px; position: sticky; top: 72px; z-index: 19;
+}
+.delete-bar.show { display: flex; }
+.delete-bar-label { font-size: 13px; font-weight: 700; color: var(--red); flex: 1; }
+.delete-cancel-btn {
+  border: 1.5px solid var(--border); background: var(--white);
+  border-radius: 99px; padding: 6px 14px; font-family: inherit;
+  font-size: 13px; color: var(--text-sub); cursor: pointer;
+}
+.delete-exec-btn {
+  border: none; background: var(--red);
+  border-radius: 99px; padding: 6px 14px; font-family: inherit;
+  font-size: 13px; font-weight: 700; color: #fff; cursor: pointer;
+}
+.delete-exec-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* アップロードゾーン */
 .upload-zone {
-  margin: 16px 12px 0;
-  border: 2.5px dashed var(--border);
-  border-radius: var(--radius);
-  background: var(--white);
-  padding: 32px 16px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-  position: relative;
+  margin: 16px 12px 0; border: 2.5px dashed var(--border);
+  border-radius: var(--radius); background: var(--white);
+  padding: 32px 16px; text-align: center; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s; position: relative;
 }
 .upload-zone.drag-over { border-color: var(--pink); background: var(--pink-bg); }
-.upload-zone input[type=file] {
-  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-}
+.upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
 .upload-icon { font-size: 40px; margin-bottom: 10px; }
 .upload-label { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .upload-sub { font-size: 12px; color: var(--text-sub); }
+
+/* プログレス */
 .progress-wrap { margin: 14px 12px 0; display: none; }
 .progress-wrap.show { display: block; }
 .progress-label { font-size: 12px; color: var(--text-sub); margin-bottom: 6px; }
 .progress-bar-bg { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
 .progress-bar { height: 100%; background: linear-gradient(90deg, #f9b8d4, #c9b8f0); border-radius: 99px; width: 0%; transition: width 0.3s; }
+
+/* セクション */
 .section-title {
   font-size: 13px; font-weight: 700; color: var(--text-sub);
-  padding: 18px 14px 8px;
-  display: flex; align-items: center; gap: 6px;
+  padding: 18px 14px 8px; display: flex; align-items: center; gap: 6px;
 }
 .badge { background: var(--pink); color: #fff; font-size: 11px; font-weight: 700; border-radius: 99px; padding: 2px 8px; }
 .badge.done { background: var(--green); }
+
+/* グリッド */
 .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 12px; }
+
+/* カード */
 .card {
   background: var(--white); border-radius: var(--radius); overflow: hidden;
   box-shadow: 0 2px 10px rgba(249,168,201,0.15);
-  border: 2px solid transparent; transition: border-color 0.2s;
+  border: 2px solid transparent; transition: border-color 0.2s, opacity 0.2s;
+  position: relative;
 }
 .card.incomplete { border-color: var(--pink); }
 .card.complete   { border-color: var(--green); }
 .card.error      { border-color: var(--red); }
+.card.selected   { border-color: var(--red); opacity: 0.75; }
+
+/* 選択チェックボックス（削除モード時） */
+.card-check {
+  display: none; position: absolute; top: 8px; left: 8px; z-index: 5;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--white); border: 2px solid var(--border);
+  align-items: center; justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.card-check.checked { background: var(--red); border-color: var(--red); }
+.card-check svg { display: none; }
+.card-check.checked svg { display: block; }
+.delete-mode .card-check { display: flex; }
+.delete-mode .card { cursor: pointer; }
+
 .card-img-wrap {
-  width: 100%; padding-top: 105%;
-  position: relative; overflow: hidden;
+  width: 100%; padding-top: 105%; position: relative; overflow: hidden;
   background: linear-gradient(160deg, #fde8f3 0%, #e8e4f8 100%);
 }
 .card-img-wrap img {
-  position: absolute; top: -10%; left: 0;
-  width: 100%; height: 200%;
+  position: absolute; top: -10%; left: 0; width: 100%; height: 200%;
   object-fit: cover; object-position: top center;
 }
 .card-img-wrap .uploading-overlay {
-  position: absolute; inset: 0;
-  background: rgba(255,255,255,0.7);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 24px;
+  position: absolute; inset: 0; background: rgba(255,255,255,0.7);
+  display: flex; align-items: center; justify-content: center; font-size: 24px;
 }
 .card-status-badge {
   position: absolute; top: 8px; right: 8px;
-  font-size: 10px; font-weight: 700;
-  border-radius: 99px; padding: 3px 8px;
+  font-size: 10px; font-weight: 700; border-radius: 99px; padding: 3px 8px;
   background: var(--pink); color: #fff;
 }
 .card-status-badge.done  { background: var(--green); }
@@ -138,16 +167,15 @@ body {
 .input-row { margin-bottom: 8px; }
 .input-label { font-size: 10px; font-weight: 700; color: var(--text-sub); margin-bottom: 4px; }
 .input-field {
-  width: 100%; border: 1.5px solid var(--border);
-  border-radius: 8px; padding: 7px 10px;
-  font-family: inherit; font-size: 13px;
-  color: var(--text); background: var(--bg);
+  width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 10px;
+  font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg);
   outline: none; transition: border-color 0.2s;
 }
 .input-field:focus { border-color: var(--pink); background: var(--white); }
 .save-status { font-size: 10px; text-align: right; margin-top: 4px; color: var(--text-sub); min-height: 14px; }
 .save-status.ok  { color: var(--green); }
 .save-status.err { color: var(--red); }
+
 .empty-state { text-align: center; padding: 48px 16px; color: var(--text-sub); font-size: 14px; line-height: 2; }
 .empty-state .ico { display: block; font-size: 40px; margin-bottom: 10px; }
 .loading-sheet { text-align: center; padding: 24px 16px; color: var(--text-sub); font-size: 13px; }
@@ -155,10 +183,8 @@ body {
 .spin { display: inline-block; animation: spin 0.8s linear infinite; }
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  background: #444; color: #fff; font-size: 13px;
-  border-radius: 99px; padding: 10px 20px;
-  opacity: 0; transition: opacity 0.3s;
-  white-space: nowrap; z-index: 999; pointer-events: none;
+  background: #444; color: #fff; font-size: 13px; border-radius: 99px; padding: 10px 20px;
+  opacity: 0; transition: opacity 0.3s; white-space: nowrap; z-index: 999; pointer-events: none;
 }
 .toast.show { opacity: 1; }
 </style>
@@ -178,8 +204,6 @@ const CONFIG = {
 const AUTH_TOKEN_KEY = 'freca_auth_token_gwryw';
 const AUTH_DATE_KEY  = 'freca_auth_date_gwryw';
 // ========================================
-
-// アプリ名をタイトルに反映
 document.title = CONFIG.appName;
 </script>
 
@@ -199,9 +223,21 @@ document.title = CONFIG.appName;
 <!-- メインコンテンツ -->
 <div id="main-content" style="display:none">
   <header class="header">
-    <div class="header-title" id="header-title"></div>
+    <div class="header-top">
+      <div class="header-title" id="header-title"></div>
+      <button id="delete-mode-btn" style="
+        background:rgba(255,255,255,0.22);border:none;border-radius:99px;
+        padding:6px 12px;color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;
+      " onclick="enterDeleteMode()">削除</button>
+    </div>
     <div class="header-sub">画像を選んでアップロードしてね</div>
   </header>
+
+  <div class="delete-bar" id="delete-bar">
+    <div class="delete-bar-label" id="delete-bar-label">0件選択中</div>
+    <button class="delete-cancel-btn" onclick="exitDeleteMode()">キャンセル</button>
+    <button class="delete-exec-btn" id="delete-exec-btn" onclick="execDelete()" disabled>削除</button>
+  </div>
 
   <div class="upload-zone" id="upload-zone">
     <input type="file" id="file-input" accept="image/*" multiple>
@@ -226,8 +262,7 @@ document.title = CONFIG.appName;
   </div>
 
   <div class="empty-state" id="empty-state" style="display:none">
-    <span class="ico">💕</span>
-    上の画像ボタンから<br>フレカ写真を選んでね
+    <span class="ico">💕</span>上の画像ボタンから<br>フレカ写真を選んでね
   </div>
 
   <div class="loading-sheet" id="loading-sheet">
@@ -236,14 +271,14 @@ document.title = CONFIG.appName;
 </div>
 
 <div class="toast" id="toast"></div>
-
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 const cardMap = {};
+let deleteMode = false;
+const selectedIds = new Set();
 
-// アプリ名セット
 document.getElementById('auth-app-name').textContent = CONFIG.appName;
-document.getElementById('header-title') && (document.getElementById('header-title').textContent = '📸 ' + CONFIG.appName);
+document.getElementById('header-title').textContent  = '📸 ' + CONFIG.appName;
 
 // ===== 認証 =====
 function getToday() { return new Date().toISOString().slice(0, 10); }
@@ -254,8 +289,7 @@ async function checkAuth() {
   if (!token || date !== getToday()) return false;
   try {
     const res  = await fetch(CONFIG.gasUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
+      method: 'POST', headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'verify', token }),
     });
     const data = await res.json();
@@ -271,8 +305,7 @@ async function submitPassword() {
   btn.disabled = true; btn.textContent = '確認中…'; err.textContent = '';
   try {
     const res  = await fetch(CONFIG.gasUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
+      method: 'POST', headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'auth', password: pw }),
     });
     const data = await res.json();
@@ -318,6 +351,87 @@ function onAuthSuccess() {
     e.preventDefault(); uploadZone.classList.remove('drag-over');
     handleFiles([...e.dataTransfer.files].filter(f => f.type.startsWith('image/')));
   });
+}
+
+// ===== 削除モード =====
+function enterDeleteMode() {
+  deleteMode = true;
+  selectedIds.clear();
+  document.getElementById('delete-bar').classList.add('show');
+  document.getElementById('delete-mode-btn').style.display = 'none';
+  document.getElementById('upload-zone').style.display = 'none';
+  // グリッドに削除モードクラス
+  document.getElementById('pending-grid').classList.add('delete-mode');
+  document.getElementById('done-grid').classList.add('delete-mode');
+  updateDeleteBar();
+}
+
+function exitDeleteMode() {
+  deleteMode = false;
+  selectedIds.clear();
+  document.getElementById('delete-bar').classList.remove('show');
+  document.getElementById('delete-mode-btn').style.display = '';
+  document.getElementById('upload-zone').style.display = '';
+  document.getElementById('pending-grid').classList.remove('delete-mode');
+  document.getElementById('done-grid').classList.remove('delete-mode');
+  // 全カードの選択解除
+  Object.values(cardMap).forEach(card => {
+    const el    = document.getElementById('card-' + card.id);
+    const check = document.getElementById('check-' + card.id);
+    if (el)    el.classList.remove('selected');
+    if (check) check.classList.remove('checked');
+  });
+}
+
+function toggleSelect(card) {
+  if (!deleteMode) return;
+  const el    = document.getElementById('card-' + card.id);
+  const check = document.getElementById('check-' + card.id);
+  if (selectedIds.has(card.id)) {
+    selectedIds.delete(card.id);
+    el.classList.remove('selected');
+    check.classList.remove('checked');
+  } else {
+    selectedIds.add(card.id);
+    el.classList.add('selected');
+    check.classList.add('checked');
+  }
+  updateDeleteBar();
+}
+
+function updateDeleteBar() {
+  const count = selectedIds.size;
+  document.getElementById('delete-bar-label').textContent = count + '件選択中';
+  document.getElementById('delete-exec-btn').disabled = count === 0;
+}
+
+async function execDelete() {
+  if (!selectedIds.size) return;
+  const urls = [...selectedIds].map(id => cardMap[id]?.url).filter(Boolean);
+  const btn  = document.getElementById('delete-exec-btn');
+  btn.disabled = true; btn.textContent = '削除中…';
+
+  try {
+    await fetch(CONFIG.gasUrl, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'delete', sheetName: CONFIG.sheetName, urls }),
+      mode: 'no-cors',
+    });
+
+    // DOM・cardMapから削除
+    [...selectedIds].forEach(id => {
+      const el = document.getElementById('card-' + id);
+      if (el) el.remove();
+      delete cardMap[id];
+    });
+
+    exitDeleteMode();
+    updateSections();
+    showToast('削除しました');
+  } catch {
+    btn.disabled = false; btn.textContent = '削除';
+    showToast('削除に失敗しました');
+  }
 }
 
 // ===== 既存データ読み込み =====
@@ -391,14 +505,10 @@ async function uploadToCloudinary(blob, filename) {
 // ===== GAS保存 =====
 async function saveToSheet(card) {
   await fetch(CONFIG.gasUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
+    method: 'POST', headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({
-      action: 'save',
-      sheetName: CONFIG.sheetName,
-      url:       card.url       || "",
-      charaName: card.charaName || "",
-      codeName:  card.codeName  || "",
+      action: 'save', sheetName: CONFIG.sheetName,
+      url: card.url || "", charaName: card.charaName || "", codeName: card.codeName || "",
     }),
     mode: 'no-cors'
   });
@@ -441,28 +551,30 @@ async function handleFiles(files) {
     done++;
     progressLabel.textContent = `アップロード中… ${done} / ${total}`;
     progressBar.style.width = (done / total * 100) + '%';
-    updateCardImage(card); updateCardBadge(card);
-    updateCardStyle(card); moveCardToSection(card); updateSections();
+    updateCardImage(card); updateCardBadge(card); updateCardStyle(card);
+    moveCardToSection(card); updateSections();
   }
   progressWrap.classList.remove('show');
   showToast(`${done}枚アップロード完了！`);
 }
 
-// ===== カード描画（初回のみ） =====
+// ===== カード描画 =====
 function renderCard(card) {
   const el = document.createElement('div');
   el.id = 'card-' + card.id;
 
-  const imgWrap = document.createElement('div');
-  imgWrap.className = 'card-img-wrap';
-  imgWrap.id = 'img-wrap-' + card.id;
+  // チェックボックス（削除モード用）
+  const check = document.createElement('div');
+  check.className = 'card-check'; check.id = 'check-' + card.id;
+  check.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  el.appendChild(check);
 
+  const imgWrap = document.createElement('div');
+  imgWrap.className = 'card-img-wrap'; imgWrap.id = 'img-wrap-' + card.id;
   if (card.url) {
-    const img = document.createElement('img');
-    img.src = card.url; img.alt = ''; imgWrap.appendChild(img);
+    const img = document.createElement('img'); img.src = card.url; img.alt = ''; imgWrap.appendChild(img);
   } else if (card.blob) {
-    const img = document.createElement('img');
-    img.src = URL.createObjectURL(card.blob); img.alt = ''; imgWrap.appendChild(img);
+    const img = document.createElement('img'); img.src = URL.createObjectURL(card.blob); img.alt = ''; imgWrap.appendChild(img);
   }
   if (card.status === 'uploading') {
     const ov = document.createElement('div');
@@ -471,72 +583,65 @@ function renderCard(card) {
   }
   const badge = document.createElement('div');
   badge.id = 'badge-' + card.id; imgWrap.appendChild(badge);
+  el.appendChild(imgWrap);
 
-  const body = document.createElement('div');
-  body.className = 'card-body';
-
-  const charaRow = document.createElement('div');
-  charaRow.className = 'input-row';
+  const body = document.createElement('div'); body.className = 'card-body';
+  const charaRow = document.createElement('div'); charaRow.className = 'input-row';
   charaRow.innerHTML = '<div class="input-label">キャラ名</div>';
   const charaInput = document.createElement('input');
   charaInput.className = 'input-field'; charaInput.id = 'chara-' + card.id;
-  charaInput.type = 'text'; charaInput.placeholder = '例：ゆいしょ';
-  charaInput.value = card.charaName || '';
+  charaInput.type = 'text'; charaInput.placeholder = '例：ゆいしょ'; charaInput.value = card.charaName || '';
   charaRow.appendChild(charaInput);
 
-  const codeRow = document.createElement('div');
-  codeRow.className = 'input-row';
+  const codeRow = document.createElement('div'); codeRow.className = 'input-row';
   codeRow.innerHTML = '<div class="input-label">コーデ名</div>';
   const codeInput = document.createElement('input');
   codeInput.className = 'input-field'; codeInput.id = 'code-' + card.id;
-  codeInput.type = 'text'; codeInput.placeholder = 'コーデ名を入力';
-  codeInput.value = card.codeName || '';
+  codeInput.type = 'text'; codeInput.placeholder = 'コーデ名を入力'; codeInput.value = card.codeName || '';
   codeRow.appendChild(codeInput);
 
   const saveStatus = document.createElement('div');
   saveStatus.className = 'save-status'; saveStatus.id = 'save-status-' + card.id;
-
   body.appendChild(charaRow); body.appendChild(codeRow); body.appendChild(saveStatus);
-  el.appendChild(imgWrap); el.appendChild(body);
+  el.appendChild(body);
+
+  // 長押しで削除モード、削除モード中タップで選択
+  let pressTimer;
+  el.addEventListener('pointerdown', () => {
+    if (deleteMode) return;
+    pressTimer = setTimeout(() => enterDeleteMode(), 600);
+  });
+  el.addEventListener('pointerup',     () => clearTimeout(pressTimer));
+  el.addEventListener('pointermove',   () => clearTimeout(pressTimer));
+  el.addEventListener('pointercancel', () => clearTimeout(pressTimer));
+  el.addEventListener('click', () => { if (deleteMode) toggleSelect(card); });
 
   charaInput.addEventListener('input', () => {
-    card.charaName = charaInput.value.trim();
-    updateCardBadge(card); updateCardStyle(card);
+    card.charaName = charaInput.value.trim(); updateCardBadge(card); updateCardStyle(card);
   });
   codeInput.addEventListener('input', () => {
-    card.codeName = codeInput.value.trim();
-    updateCardBadge(card); updateCardStyle(card);
+    card.codeName = codeInput.value.trim(); updateCardBadge(card); updateCardStyle(card);
   });
   charaInput.addEventListener('blur', () => {
-    card.charaName = charaInput.value.trim();
-    updateCardBadge(card); updateCardStyle(card);
+    card.charaName = charaInput.value.trim(); updateCardBadge(card); updateCardStyle(card);
     moveCardToSection(card); updateSections(); saveToSheetWithStatus(card);
   });
   codeInput.addEventListener('blur', () => {
-    card.codeName = codeInput.value.trim();
-    updateCardBadge(card); updateCardStyle(card);
+    card.codeName = codeInput.value.trim(); updateCardBadge(card); updateCardStyle(card);
     moveCardToSection(card); updateSections(); saveToSheetWithStatus(card);
   });
 
-  // 初期スタイル適用（ここが修正ポイント：初回から正しく判定）
-  updateCardBadge(card);
-  updateCardStyle(card);
-
+  updateCardBadge(card); updateCardStyle(card);
   const isComplete = !!(card.charaName && card.codeName);
-  const targetGrid = isComplete
-    ? document.getElementById('done-grid')
-    : document.getElementById('pending-grid');
+  const targetGrid = isComplete ? document.getElementById('done-grid') : document.getElementById('pending-grid');
   targetGrid.appendChild(el);
   updateSections();
 }
 
 function updateCardImage(card) {
-  const imgWrap = document.getElementById('img-wrap-' + card.id);
-  if (!imgWrap) return;
-  const existingImg = imgWrap.querySelector('img');
-  if (existingImg) existingImg.remove();
-  const ov = document.getElementById('overlay-' + card.id);
-  if (ov) ov.remove();
+  const imgWrap = document.getElementById('img-wrap-' + card.id); if (!imgWrap) return;
+  const existingImg = imgWrap.querySelector('img'); if (existingImg) existingImg.remove();
+  const ov = document.getElementById('overlay-' + card.id); if (ov) ov.remove();
   if (card.url || card.blob) {
     const img = document.createElement('img');
     img.src = card.url || URL.createObjectURL(card.blob); img.alt = '';
@@ -545,8 +650,7 @@ function updateCardImage(card) {
 }
 
 function updateCardBadge(card) {
-  const badge = document.getElementById('badge-' + card.id);
-  if (!badge) return;
+  const badge = document.getElementById('badge-' + card.id); if (!badge) return;
   const isComplete = !!(card.charaName && card.codeName);
   if (card.status === 'error')  { badge.textContent = 'エラー'; badge.className = 'card-status-badge error'; }
   else if (isComplete)          { badge.textContent = '登録済'; badge.className = 'card-status-badge done'; }
@@ -554,19 +658,15 @@ function updateCardBadge(card) {
 }
 
 function updateCardStyle(card) {
-  const el = document.getElementById('card-' + card.id);
-  if (!el) return;
+  const el = document.getElementById('card-' + card.id); if (!el) return;
   const isComplete = !!(card.charaName && card.codeName);
   el.className = 'card ' + (card.status === 'error' ? 'error' : isComplete ? 'complete' : 'incomplete');
 }
 
 function moveCardToSection(card) {
-  const el = document.getElementById('card-' + card.id);
-  if (!el) return;
+  const el = document.getElementById('card-' + card.id); if (!el) return;
   const isComplete = !!(card.charaName && card.codeName) && card.status !== 'error';
-  const targetGrid = isComplete
-    ? document.getElementById('done-grid')
-    : document.getElementById('pending-grid');
+  const targetGrid = isComplete ? document.getElementById('done-grid') : document.getElementById('pending-grid');
   if (el.parentElement !== targetGrid) targetGrid.appendChild(el);
 }
 
