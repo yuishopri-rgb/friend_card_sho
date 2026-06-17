@@ -251,10 +251,11 @@ async function checkAuth() {
   const date  = localStorage.getItem(AUTH_DATE_KEY);
   if (!token || date !== getToday()) return false;
   try {
-    const res  = await fetch(CONFIG.gasUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'verify', token }),
+    const res = await fetch(CONFIG.gasUrl, {
+  method: 'POST',
+  headers: { 'Content-Type': 'text/plain' },
+  body: JSON.stringify({ action: 'verify', token }),
+
     });
     const data = await res.json();
     return data.status === 'ok';
@@ -270,10 +271,10 @@ async function submitPassword() {
   btn.textContent = '確認中…';
   err.textContent = '';
   try {
-    const res  = await fetch(CONFIG.gasUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'auth', password: pw }),
+    const res = await fetch(CONFIG.gasUrl, {
+  method: 'POST',
+  headers: { 'Content-Type': 'text/plain' },
+  body: JSON.stringify({ action: 'auth', password: pw }),
     });
     const data = await res.json();
     if (data.status === 'ok') {
