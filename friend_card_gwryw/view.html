@@ -7,22 +7,17 @@
 <link rel="preconnect" href="https://res.cloudinary.com">
 <link rel="dns-prefetch" href="https://docs.google.com">
 <link rel="dns-prefetch" href="https://res.cloudinary.com">
-<title>ゆいしょ家のフレカ</title>
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ゆいしょ家のフレカ">
-<meta name="twitter:description" content="フレンドカード一覧">
-<meta name="twitter:image" content="https://yuishopri.com/ogp.png">
-<meta name="twitter:image:src" content="https://yuishopri.com/ogp.png">
-<meta property="og:image" content="https://yuishopri.com/ogp.png">
-<meta property="og:title" content="ゆいしょ家のフレカ">
-<meta property="og:description" content="フレンドカード一覧">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://yuishopri.com/friend_card_gwryw/view.html">
-<link rel="apple-touch-icon" href="/icon.png">
+<title>フレカ</title>
+
+<!-- OGP・アイコンはフォルダ内のファイルを参照 -->
+<link rel="apple-touch-icon" href="icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="ゆいしょ家のフレカ">
 <meta name="theme-color" content="#f9b8d4">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:type" content="website">
+<meta property="og:image" content="ogp.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -31,7 +26,6 @@
   :root {
     --pink:      #f9a8c9;
     --pink-bg:   #fde8f3;
-    --pink-dark: #e06fa0;
     --text:      #5c4a6e;
     --text-sub:  #c4a8c4;
     --border:    #f5ddef;
@@ -43,13 +37,14 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body {
     font-family: 'M PLUS Rounded 1c', 'Hiragino Kaku Gothic ProN', sans-serif;
-    background: linear-gradient(160deg, #fff5fb 0%, #f5f0ff 100%); background-attachment: fixed; color: var(--text);
+    background: linear-gradient(160deg, #fff5fb 0%, #f5f0ff 100%);
+    background-attachment: fixed; color: var(--text);
     max-width: 480px; margin: 0 auto; min-height: 100vh;
     padding-bottom: calc(var(--footer-h) + 8px);
   }
   .header {
-    background: linear-gradient(135deg, #f9b8d4 0%, #c9b8f0 100%); padding: 14px 16px 12px;
-    position: sticky; top: 0; z-index: 20;
+    background: linear-gradient(135deg, #f9b8d4 0%, #c9b8f0 100%);
+    padding: 14px 16px 12px; position: sticky; top: 0; z-index: 20;
   }
   .header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .header-title { flex: 1; font-size: 20px; font-weight: 700; color: #fff; }
@@ -80,8 +75,7 @@
   }
   .card:active { transform: scale(0.96); }
   .card-img {
-    width: 100%; padding-top: 105%;
-    position: relative; overflow: hidden;
+    width: 100%; padding-top: 105%; position: relative; overflow: hidden;
     background: linear-gradient(160deg, #fde8f3 0%, #e8e4f8 100%);
   }
   .card-img img {
@@ -111,7 +105,7 @@
     transition: background 0.13s, color 0.13s;
   }
   .pg-btn.active { background: linear-gradient(135deg,#f9b8d4,#c9b8f0); border-color: #f9a8c9; color: #fff; font-weight: 700; }
-  .pg-btn.arrow { border-radius: 50%; font-size: 16px; }
+  .pg-btn.arrow { font-size: 16px; }
   .pg-btn:not(:disabled):not(.active):active { background: var(--pink-bg); }
   .pg-btn:disabled { opacity: 0.3; cursor: default; }
   .pg-ellipsis { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: var(--text-sub); font-size: 13px; }
@@ -124,14 +118,18 @@
     position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
     width: 100%; max-width: 480px; height: var(--footer-h);
     background: var(--white); border-top: 1px solid #f8bbd0;
-    display: flex; z-index: 30;
+    display: flex; overflow-x: auto; z-index: 30;
+    scrollbar-width: none;
   }
+  .footer::-webkit-scrollbar { display: none; }
   .nav-btn {
-    flex: 1; display: flex; flex-direction: column;
+    flex: 0 0 auto; min-width: 60px;
+    display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     gap: 3px; border: none; background: none; cursor: pointer;
     font-family: inherit; color: #bdbdbd; font-size: 10px; font-weight: 500;
-    padding: 6px 2px; transition: color 0.15s; position: relative;
+    padding: 6px 8px; transition: color 0.15s; position: relative;
+    white-space: nowrap;
   }
   .nav-btn svg { width: 22px; height: 22px; transition: transform 0.15s; }
   .nav-btn.active { color: var(--pink); }
@@ -146,45 +144,46 @@
     align-items: center; justify-content: center; padding: 16px;
   }
   .overlay.open { display: flex; }
-  .modal {
-    position: relative;
-    width: min(320px, 82vw);
-    animation: pop .2s ease-out;
-  }
-  @keyframes pop {
-    from { transform: scale(0.88); opacity: 0; }
-    to   { transform: scale(1);    opacity: 1; }
-  }
+  .modal { position: relative; width: min(320px, 82vw); animation: pop .2s ease-out; }
+  @keyframes pop { from { transform: scale(0.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .modal-img-wrap {
-    width: 100%; aspect-ratio: 2/3;
-    border-radius: 18px; overflow: hidden;
+    width: 100%; aspect-ratio: 2/3; border-radius: 18px; overflow: hidden;
     box-shadow: 0 8px 40px rgba(180,120,200,0.3);
     background: linear-gradient(160deg,#fde8f3,#e8e4f8);
   }
   .modal-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .modal-img-wrap .no-img {
-    width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:72px;
-  }
   .modal-close {
     position: absolute; top: -14px; right: -14px;
     width: 36px; height: 36px; border-radius: 50%;
     background: #fff; border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
-    font-size: 18px; color: #555;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25); font-size: 18px; color: #555;
   }
   .modal-close:active { background: #eee; }
   .header-updated {
-    font-size: 11px; font-weight: 500;
-    color: rgba(255,255,255,0.85);
-    background: rgba(255,255,255,0.2);
-    border-radius: 20px; padding: 3px 9px;
-    white-space: nowrap; flex-shrink: 0;
-    display: none;
+    font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.2); border-radius: 20px; padding: 3px 9px;
+    white-space: nowrap; flex-shrink: 0; display: none;
   }
 </style>
 </head>
 <body>
+
+<script>
+// ========== ここだけ書き換える ==========
+const CONFIG = {
+  appName:      "ゆいしょ家のフレカ",       // アプリ名
+  sheetCsvUrl:  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQg6zxmEm3RCGxgXpP8XBZXFsCNBwWOFkkP_-qyk2DtTaLz43ZqlCyh1N74c-aQbQhbUGlXuFpO1tgf/pub?output=csv",
+  cacheKey:     "freca_gwryw_v1",           // ユーザーごとに変える
+};
+// ========================================
+
+// アプリ名・OGP反映
+document.title = CONFIG.appName;
+document.querySelector('meta[name="twitter:title"]') || document.head.insertAdjacentHTML('beforeend', `<meta name="twitter:title" content="${CONFIG.appName}">`);
+document.querySelector('meta[property="og:title"]')  || document.head.insertAdjacentHTML('beforeend', `<meta property="og:title" content="${CONFIG.appName}">`);
+document.querySelector('meta[name="apple-mobile-web-app-title"]').content = CONFIG.appName;
+</script>
 
 <header class="header">
   <div class="header-top">
@@ -206,7 +205,7 @@
 
 <main>
   <div class="grid" id="grid">
-    <div class="state"><span class="ico"><svg width="36" height="36" viewBox="0 0 24 24" fill="#f9b8d4" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></span>読み込み中…</div>
+    <div class="state"><span class="ico">💕</span>読み込み中…</div>
   </div>
   <div class="pagination" id="pagination"></div>
 </main>
@@ -214,7 +213,7 @@
 <footer class="footer" id="footer"></footer>
 
 <div class="overlay" id="overlay">
-  <div class="modal" id="modal">
+  <div class="modal">
     <button class="modal-close" id="modal-close">✕</button>
     <div class="modal-img-wrap" id="m-img"></div>
   </div>
@@ -222,203 +221,223 @@
 
 <script>
 const HEART_ICO = '<svg width="36" height="36" viewBox="0 0 24 24" fill="#f9b8d4" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
-
-// ========== ここだけ書き換える ==========
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQg6zxmEm3RCGxgXpP8XBZXFsCNBwWOFkkP_-qyk2DtTaLz43ZqlCyh1N74c-aQbQhbUGlXuFpO1tgf/pub?output=csv";
-const CACHE_KEY = "freca_gwryw_v1"; // ユーザーごとに変える
-// ========================================
+const ALL_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
+const CHAR_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
 
 const PAGE_SIZE = 20;
-const CI = { chara:0, code:1, img:2, yomi:3, note1:4, note2:5 };
+let allData = [], activeFilter = null, searchQ = '', currentPage = 1;
+let charaList = []; // A列から取得したキャラ名一覧（登場順・重複なし）
 
-const NAVS = [
-  { label:"みんな", filter:null,
-    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
-  { label:"ゆいしょ", filter:"ゆいしょ",
-    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>` },
-  { label:"りいしょ", filter:"りいしょ",
-    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>` },
-  { label:"ういしょ", filter:"ういしょ",
-    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>` },
-  { label:"れいしょ", filter:"れいしょ",
-    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` },
-  { label:"よいしょ", filter:"よいしょ",
-    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53A4.48 4.48 0 0 0 16 2a4.48 4.48 0 0 0-4.47 5.17A12.73 12.73 0 0 1 2.64 3.16s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>` },
-  { label:"ないしょ", filter:"ないしょ",
-    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>` },
-];
+const gridEl    = document.getElementById('grid');
+const pagEl     = document.getElementById('pagination');
+const titleEl   = document.getElementById('header-title');
+const srchEl    = document.getElementById('search');
+const footerEl  = document.getElementById('footer');
+const overlay   = document.getElementById('overlay');
 
-const footerEl = document.getElementById("footer");
-NAVS.forEach((n, i) => {
-  const btn = document.createElement("button");
-  btn.className = "nav-btn" + (i===0?" active":"");
-  btn.innerHTML = n.icon + `<span>${n.label}</span>`;
-  btn.onclick = () => switchNav(i);
-  footerEl.appendChild(btn);
-});
+// ===== フッタータブ構築（データ取得後に呼ぶ） =====
+function buildNavs() {
+  footerEl.innerHTML = '';
 
-let allData=[], activeTab="みんな", activeFilter=null, searchQ="", currentPage=1;
-const gridEl=document.getElementById("grid");
-const pagEl=document.getElementById("pagination");
-const titleEl=document.getElementById("header-title");
-const srchEl=document.getElementById("search");
-const overlay=document.getElementById("overlay");
+  // 「みんな」タブ
+  const allBtn = document.createElement('button');
+  allBtn.className = 'nav-btn active';
+  allBtn.innerHTML = ALL_ICON + '<span>みんな</span>';
+  allBtn.onclick = () => switchNav(null, 'みんな', allBtn);
+  footerEl.appendChild(allBtn);
 
-function switchNav(i){
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
-  footerEl.children[i].classList.add("active");
-  activeTab=NAVS[i].label;
-  activeFilter=NAVS[i].filter;
-  titleEl.textContent=NAVS[i].label;
-  srchEl.value=""; searchQ=""; currentPage=1;
+  // キャラタブ（登場順）
+  charaList.forEach(name => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-btn';
+    btn.innerHTML = CHAR_ICON + `<span>${esc(name)}</span>`;
+    btn.onclick = () => switchNav(name, name, btn);
+    footerEl.appendChild(btn);
+  });
+}
+
+function switchNav(filter, label, btnEl) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  btnEl.classList.add('active');
+  activeFilter = filter;
+  titleEl.textContent = label;
+  srchEl.value = ''; searchQ = ''; currentPage = 1;
   render();
-  window.scrollTo({top:0,behavior:"smooth"});
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function toHira(s){ return s.replace(/[\u30A1-\u30F6]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60)); }
-function toKata(s){ return s.replace(/[\u3041-\u3096]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60)); }
-function matchSearch(target,q){
-  if(!q)return true;
-  const t=target.toLowerCase();
-  return t.includes(q)||t.includes(toHira(q))||t.includes(toKata(q));
-}
-
-function parseCSV(text){
-  const rows=[]; let row=[],f="",inQ=false;
-  for(let i=0;i<text.length;i++){
-    const c=text[i],n=text[i+1];
-    if(inQ){if(c==='"'&&n==='"'){f+='"';i++;}else if(c==='"'){inQ=false;}else{f+=c;}}
-    else{if(c==='"'){inQ=true;}else if(c===','){row.push(f);f="";}
-    else if(c==='\r'&&n==='\n'){row.push(f);rows.push(row);row=[];f="";i++;}
-    else if(c==='\n'||c==='\r'){row.push(f);rows.push(row);row=[];f="";}
-    else{f+=c;}}
+// ===== CSV取得・パース =====
+function parseCSV(text) {
+  const rows = []; let row = [], f = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], n = text[i + 1];
+    if (inQ) { if (c === '"' && n === '"') { f += '"'; i++; } else if (c === '"') { inQ = false; } else { f += c; } }
+    else {
+      if (c === '"') { inQ = true; }
+      else if (c === ',') { row.push(f); f = ''; }
+      else if (c === '\r' && n === '\n') { row.push(f); rows.push(row); row = []; f = ''; i++; }
+      else if (c === '\n' || c === '\r') { row.push(f); rows.push(row); row = []; f = ''; }
+      else { f += c; }
+    }
   }
-  if(f||row.length){row.push(f);rows.push(row);}
+  if (f || row.length) { row.push(f); rows.push(row); }
   return rows;
 }
 
-function rowsToData(rows){
-  const updEl=document.getElementById("header-updated");
-  if(rows.length>0){
-    const updated=(rows[0][6]||"").trim();
-    if(updated){updEl.textContent="最終更新: "+updated;updEl.style.display="inline-block";}
+function rowsToData(rows) {
+  const updEl = document.getElementById('header-updated');
+  if (rows.length > 0) {
+    const updated = (rows[0][6] || '').trim();
+    if (updated) { updEl.textContent = '最終更新: ' + updated; updEl.style.display = 'inline-block'; }
   }
-  return rows.slice(1).filter(r=>r.some(c=>(c||"").trim())).map(r=>({
-    chara:(r[CI.chara]||"").trim(), code:(r[CI.code]||"").trim(),
-    img:(r[CI.img]||"").trim(),     yomi:(r[CI.yomi]||"").trim(),
-    note1:(r[CI.note1]||"").trim(), note2:(r[CI.note2]||"").trim(),
+
+  const data = rows.slice(1).filter(r => r.some(c => (c || '').trim())).map(r => ({
+    chara: (r[0] || '').trim(),
+    code:  (r[1] || '').trim(),
+    img:   (r[2] || '').trim(),
   }));
+
+  // A列からキャラ名一覧を登場順・重複なしで取得
+  const seen = new Set();
+  charaList = [];
+  data.forEach(d => {
+    if (d.chara && !seen.has(d.chara)) { seen.add(d.chara); charaList.push(d.chara); }
+  });
+
+  return data;
 }
 
-async function fetchData(forceReload=false){
-  let hasCache=false;
-  if(!forceReload){
-    try{
-      const c=localStorage.getItem(CACHE_KEY);
-      if(c){ allData=JSON.parse(c); render(); hasCache=true; }
-    }catch(e){}
+// ===== データ取得 =====
+async function fetchData(forceReload = false) {
+  let hasCache = false;
+  if (!forceReload) {
+    try {
+      const c = localStorage.getItem(CONFIG.cacheKey);
+      if (c) {
+        const parsed = JSON.parse(c);
+        allData   = parsed.data;
+        charaList = parsed.charaList || [];
+        buildNavs();
+        render();
+        hasCache = true;
+      }
+    } catch(e) {}
   }
-  if(!hasCache) showState(HEART_ICO,"読み込み中…");
+  if (!hasCache) showState(HEART_ICO, '読み込み中…');
 
-  try{
-    const res=await fetch(SHEET_CSV_URL,{cache:"no-store"});
-    if(!res.ok)throw new Error("HTTP "+res.status);
-    const fresh=rowsToData(parseCSV(await res.text()));
-    const freshStr=JSON.stringify(fresh);
-    if(freshStr!==JSON.stringify(allData)){ allData=fresh; render(); }
-    try{localStorage.setItem(CACHE_KEY,freshStr);}catch(e){}
-  }catch(e){
-    if(!hasCache) showState("⚠️","読み込みに失敗しました："+e.message);
+  try {
+    const res = await fetch(CONFIG.sheetCsvUrl, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const fresh = rowsToData(parseCSV(await res.text()));
+    const freshStr = JSON.stringify({ data: fresh, charaList });
+    if (freshStr !== JSON.stringify({ data: allData, charaList })) {
+      allData = fresh;
+      buildNavs();
+      render();
+    }
+    try { localStorage.setItem(CONFIG.cacheKey, freshStr); } catch(e) {}
+  } catch(e) {
+    if (!hasCache) showState('⚠️', '読み込みに失敗しました：' + e.message);
   }
 }
 
-function getFiltered(){
-  const q=searchQ.toLowerCase();
-  return allData.filter(d=>{
-    if(activeFilter!==null&&d.chara!==activeFilter)return false;
-    if(!q)return true;
-    return matchSearch(d.code,q)||matchSearch(d.yomi,q);
+// ===== フィルタ・検索 =====
+function toHira(s) { return s.replace(/[\u30A1-\u30F6]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60)); }
+function toKata(s) { return s.replace(/[\u3041-\u3096]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60)); }
+function matchSearch(target, q) {
+  if (!q) return true;
+  const t = target.toLowerCase();
+  return t.includes(q) || t.includes(toHira(q)) || t.includes(toKata(q));
+}
+
+function getFiltered() {
+  const q = searchQ.toLowerCase();
+  return allData.filter(d => {
+    if (activeFilter !== null && d.chara !== activeFilter) return false;
+    if (!q) return true;
+    return matchSearch(d.code, q) || matchSearch(d.chara, q);
   });
 }
 
-function render(){
-  const list=[...getFiltered()].reverse();
-  const total=Math.max(1,Math.ceil(list.length/PAGE_SIZE));
-  if(currentPage>total)currentPage=1;
-  const page=list.slice((currentPage-1)*PAGE_SIZE,currentPage*PAGE_SIZE);
-  if(!page.length){showState("🔍","見つかりません");return;}
+// ===== 描画 =====
+function render() {
+  const list  = [...getFiltered()].reverse();
+  const total = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  if (currentPage > total) currentPage = 1;
+  const page = list.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  if (!page.length) { showState('🔍', '見つかりません'); return; }
 
-  const frag=document.createDocumentFragment();
-  page.forEach(d=>{
-    const card=document.createElement("div");
-    card.className="card";
-    card.innerHTML=
+  const frag = document.createDocumentFragment();
+  page.forEach(d => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML =
       `<div class="card-img">${d.img
-        ?`<img src="${esc(d.img)}" alt="${esc(d.code)}" loading="lazy" decoding="async">`
-        :`<div class="no-img"><svg width="22" height="22" viewBox="0 0 24 24" fill="#f9b8d4" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>`}</div>`+
-      `<div class="card-body">`+
-        `<div class="card-chara">${esc(d.chara)}</div>`+
-        `<div class="card-name">${esc(d.code)}</div>`+
+        ? `<img src="${esc(d.img)}" alt="${esc(d.code)}" loading="lazy" decoding="async">`
+        : `<div class="no-img">${HEART_ICO}</div>`}</div>` +
+      `<div class="card-body">` +
+        `<div class="card-chara">${esc(d.chara)}</div>` +
+        `<div class="card-name">${esc(d.code)}</div>` +
       `</div>`;
-    card.onclick=()=>openModal(d);
+    card.onclick = () => openModal(d);
     frag.appendChild(card);
   });
-  gridEl.innerHTML="";
+  gridEl.innerHTML = '';
   gridEl.appendChild(frag);
   renderPag(total);
 
-  if(currentPage<total){
-    const nextPage=list.slice(currentPage*PAGE_SIZE,(currentPage+1)*PAGE_SIZE);
-    nextPage.forEach(d=>{ if(d.img){const im=new Image();im.src=d.img;} });
+  if (currentPage < total) {
+    const nextPage = list.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+    nextPage.forEach(d => { if (d.img) { const im = new Image(); im.src = d.img; } });
   }
 }
 
-function renderPag(total){
-  if(total<=1){pagEl.innerHTML="";return;}
-  const p=currentPage;
-  let html="";
-  html+=`<button class="pg-btn arrow" onclick="gp(${p-1})" ${p===1?"disabled":""}>‹</button>`;
-  const pages=[];
-  if(total<=7){ for(let i=1;i<=total;i++) pages.push(i); }
-  else{
+function renderPag(total) {
+  if (total <= 1) { pagEl.innerHTML = ''; return; }
+  const p = currentPage;
+  let html = `<button class="pg-btn arrow" onclick="gp(${p-1})" ${p===1?'disabled':''}>‹</button>`;
+  const pages = [];
+  if (total <= 7) { for (let i = 1; i <= total; i++) pages.push(i); }
+  else {
     pages.push(1);
-    if(p>3) pages.push("...");
-    for(let i=Math.max(2,p-1);i<=Math.min(total-1,p+1);i++) pages.push(i);
-    if(p<total-2) pages.push("...");
+    if (p > 3) pages.push('...');
+    for (let i = Math.max(2, p-1); i <= Math.min(total-1, p+1); i++) pages.push(i);
+    if (p < total - 2) pages.push('...');
     pages.push(total);
   }
-  pages.forEach(v=>{
-    if(v==="..."){ html+=`<span class="pg-ellipsis">…</span>`; }
-    else{ html+=`<button class="pg-btn${v===p?" active":""}" onclick="gp(${v})">${v}</button>`; }
+  pages.forEach(v => {
+    if (v === '...') { html += `<span class="pg-ellipsis">…</span>`; }
+    else { html += `<button class="pg-btn${v===p?' active':''}" onclick="gp(${v})">${v}</button>`; }
   });
-  html+=`<button class="pg-btn arrow" onclick="gp(${p+1})" ${p===total?"disabled":""}>›</button>`;
-  pagEl.innerHTML=html;
+  html += `<button class="pg-btn arrow" onclick="gp(${p+1})" ${p===total?'disabled':''}>›</button>`;
+  pagEl.innerHTML = html;
 }
-window.gp=p=>{currentPage=p;render();window.scrollTo({top:0,behavior:"smooth"});};
+window.gp = p => { currentPage = p; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
-function showState(ico,msg){
-  gridEl.innerHTML=`<div class="state"><span class="ico">${ico}</span>${esc(msg)}</div>`;
-  pagEl.innerHTML="";
+function showState(ico, msg) {
+  gridEl.innerHTML = `<div class="state"><span class="ico">${ico}</span>${esc(msg)}</div>`;
+  pagEl.innerHTML = '';
 }
 
-function openModal(d){
-  const iw=document.getElementById("m-img");
-  iw.innerHTML=d.img
-    ?`<img src="${esc(d.img)}" alt="${esc(d.code)}" loading="lazy">`
-    :`<div class="no-img"><svg width="22" height="22" viewBox="0 0 24 24" fill="#f9b8d4" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>`;
-  overlay.classList.add("open");
-  document.body.style.overflow="hidden";
+// ===== モーダル =====
+function openModal(d) {
+  const iw = document.getElementById('m-img');
+  iw.innerHTML = d.img
+    ? `<img src="${esc(d.img)}" alt="${esc(d.code)}" loading="lazy">`
+    : `<div class="no-img" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:72px">💕</div>`;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
-function closeModal(){
-  overlay.classList.remove("open");
-  document.body.style.overflow="";
-}
-document.getElementById("modal-close").onclick=closeModal;
-overlay.onclick=e=>{if(e.target===overlay)closeModal();};
-srchEl.addEventListener("input",e=>{searchQ=e.target.value;currentPage=1;render();});
-document.getElementById("reload-btn").onclick=()=>{ localStorage.removeItem(CACHE_KEY); fetchData(true); };
+function closeModal() { overlay.classList.remove('open'); document.body.style.overflow = ''; }
+document.getElementById('modal-close').onclick = closeModal;
+overlay.onclick = e => { if (e.target === overlay) closeModal(); };
 
-function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+srchEl.addEventListener('input', e => { searchQ = e.target.value; currentPage = 1; render(); });
+document.getElementById('reload-btn').onclick = () => { localStorage.removeItem(CONFIG.cacheKey); fetchData(true); };
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 fetchData();
 </script>
