@@ -66,6 +66,11 @@ body {
 .header-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .header-title { flex: 1; font-size: 20px; font-weight: 700; color: #fff; }
 .header-sub { font-size: 12px; color: rgba(255,255,255,0.8); }
+.header-btn {
+  background: rgba(255,255,255,0.22); border: none; border-radius: 99px;
+  padding: 6px 12px; color: #fff; font-family: inherit;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+}
 
 /* 削除モードバー */
 .delete-bar {
@@ -81,9 +86,8 @@ body {
   font-size: 13px; color: var(--text-sub); cursor: pointer;
 }
 .delete-exec-btn {
-  border: none; background: var(--red);
-  border-radius: 99px; padding: 6px 14px; font-family: inherit;
-  font-size: 13px; font-weight: 700; color: #fff; cursor: pointer;
+  border: none; background: var(--red); border-radius: 99px; padding: 6px 14px;
+  font-family: inherit; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer;
 }
 .delete-exec-btn:disabled { opacity: 0.4; cursor: default; }
 
@@ -118,31 +122,37 @@ body {
 /* グリッド */
 .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 12px; }
 
-/* カード */
-.card {
-  background: var(--white); border-radius: var(--radius); overflow: hidden;
-  box-shadow: 0 2px 10px rgba(249,168,201,0.15);
-  border: 2px solid transparent; transition: border-color 0.2s, opacity 0.2s;
+/* カードラッパー（チェックを外に出す） */
+.card-wrap {
   position: relative;
 }
-.card.incomplete { border-color: var(--pink); }
-.card.complete   { border-color: var(--green); }
-.card.error      { border-color: var(--red); }
-.card.selected   { border-color: var(--red); opacity: 0.75; }
 
-/* 選択チェックボックス（削除モード時） */
+/* チェックボックス：カードの外・左上に絶対配置 */
 .card-check {
-  display: none; position: absolute; top: 8px; left: 8px; z-index: 5;
-  width: 24px; height: 24px; border-radius: 50%;
+  display: none;
+  position: absolute; top: 6px; left: 6px; z-index: 10;
+  width: 26px; height: 26px; border-radius: 50%;
   background: var(--white); border: 2px solid var(--border);
   align-items: center; justify-content: center;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  pointer-events: none;
 }
 .card-check.checked { background: var(--red); border-color: var(--red); }
 .card-check svg { display: none; }
 .card-check.checked svg { display: block; }
 .delete-mode .card-check { display: flex; }
-.delete-mode .card { cursor: pointer; }
+.delete-mode .card-wrap { cursor: pointer; }
+
+/* カード */
+.card {
+  background: var(--white); border-radius: var(--radius); overflow: hidden;
+  box-shadow: 0 2px 10px rgba(249,168,201,0.15);
+  border: 2px solid transparent; transition: border-color 0.2s, opacity 0.2s;
+}
+.card.incomplete { border-color: var(--pink); }
+.card.complete   { border-color: var(--green); }
+.card.error      { border-color: var(--red); }
+.card.selected   { border-color: var(--red); opacity: 0.7; }
 
 .card-img-wrap {
   width: 100%; padding-top: 105%; position: relative; overflow: hidden;
@@ -208,7 +218,7 @@ document.title = CONFIG.appName;
 </script>
 
 <!-- 認証画面 -->
-<div class="auth-screen" id="auth-screen">
+<div class="auth-screen" id="auth-screen" style="display:none">
   <div class="auth-logo">💕</div>
   <div class="auth-title" id="auth-app-name"></div>
   <div class="auth-sub">パスワードを入力してね</div>
@@ -225,10 +235,7 @@ document.title = CONFIG.appName;
   <header class="header">
     <div class="header-top">
       <div class="header-title" id="header-title"></div>
-      <button id="delete-mode-btn" style="
-        background:rgba(255,255,255,0.22);border:none;border-radius:99px;
-        padding:6px 12px;color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;
-      " onclick="enterDeleteMode()">削除</button>
+      <button class="header-btn" id="delete-mode-btn" onclick="enterDeleteMode()">削除</button>
     </div>
     <div class="header-sub">画像を選んでアップロードしてね</div>
   </header>
@@ -280,21 +287,13 @@ const selectedIds = new Set();
 document.getElementById('auth-app-name').textContent = CONFIG.appName;
 document.getElementById('header-title').textContent  = '📸 ' + CONFIG.appName;
 
-// ===== 認証 =====
+// ===== 認証（localStorageのみで判定） =====
 function getToday() { return new Date().toISOString().slice(0, 10); }
 
-async function checkAuth() {
+function checkAuth() {
   const token = localStorage.getItem(AUTH_TOKEN_KEY);
   const date  = localStorage.getItem(AUTH_DATE_KEY);
-  if (!token || date !== getToday()) return false;
-  try {
-    const res  = await fetch(CONFIG.gasUrl, {
-      method: 'POST', headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'verify', token }),
-    });
-    const data = await res.json();
-    return data.status === 'ok';
-  } catch { return false; }
+  return !!(token && date === getToday());
 }
 
 async function submitPassword() {
@@ -325,9 +324,8 @@ async function submitPassword() {
   }
 }
 
-async function initAuth() {
-  const ok = await checkAuth();
-  if (ok) {
+function initAuth() {
+  if (checkAuth()) {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('main-content').style.display = '';
     onAuthSuccess();
@@ -360,7 +358,6 @@ function enterDeleteMode() {
   document.getElementById('delete-bar').classList.add('show');
   document.getElementById('delete-mode-btn').style.display = 'none';
   document.getElementById('upload-zone').style.display = 'none';
-  // グリッドに削除モードクラス
   document.getElementById('pending-grid').classList.add('delete-mode');
   document.getElementById('done-grid').classList.add('delete-mode');
   updateDeleteBar();
@@ -374,10 +371,9 @@ function exitDeleteMode() {
   document.getElementById('upload-zone').style.display = '';
   document.getElementById('pending-grid').classList.remove('delete-mode');
   document.getElementById('done-grid').classList.remove('delete-mode');
-  // 全カードの選択解除
-  Object.values(cardMap).forEach(card => {
-    const el    = document.getElementById('card-' + card.id);
-    const check = document.getElementById('check-' + card.id);
+  Object.keys(cardMap).forEach(id => {
+    const el    = document.getElementById('card-' + id);
+    const check = document.getElementById('check-' + id);
     if (el)    el.classList.remove('selected');
     if (check) check.classList.remove('checked');
   });
@@ -410,21 +406,17 @@ async function execDelete() {
   const urls = [...selectedIds].map(id => cardMap[id]?.url).filter(Boolean);
   const btn  = document.getElementById('delete-exec-btn');
   btn.disabled = true; btn.textContent = '削除中…';
-
   try {
     await fetch(CONFIG.gasUrl, {
       method: 'POST', headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'delete', sheetName: CONFIG.sheetName, urls }),
       mode: 'no-cors',
     });
-
-    // DOM・cardMapから削除
     [...selectedIds].forEach(id => {
-      const el = document.getElementById('card-' + id);
-      if (el) el.remove();
+      const wrap = document.getElementById('wrap-' + id);
+      if (wrap) wrap.remove();
       delete cardMap[id];
     });
-
     exitDeleteMode();
     updateSections();
     showToast('削除しました');
@@ -445,7 +437,7 @@ async function loadExistingCards() {
           id: 'existing-' + Math.random(),
           blob: null, url: row.url,
           charaName: row.charaName, codeName: row.codeName,
-          status: 'done', fromSheet: true,
+          status: 'done',
         };
         cardMap[card.id] = card;
         renderCard(card);
@@ -560,14 +552,21 @@ async function handleFiles(files) {
 
 // ===== カード描画 =====
 function renderCard(card) {
+  // カードラッパー（チェックと一緒に包む）
+  const wrap = document.createElement('div');
+  wrap.className = 'card-wrap';
+  wrap.id = 'wrap-' + card.id;
+
+  // チェックボックス（ラッパーの子、カードの外）
+  const check = document.createElement('div');
+  check.className = 'card-check';
+  check.id = 'check-' + card.id;
+  check.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  wrap.appendChild(check);
+
+  // カード本体
   const el = document.createElement('div');
   el.id = 'card-' + card.id;
-
-  // チェックボックス（削除モード用）
-  const check = document.createElement('div');
-  check.className = 'card-check'; check.id = 'check-' + card.id;
-  check.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-  el.appendChild(check);
 
   const imgWrap = document.createElement('div');
   imgWrap.className = 'card-img-wrap'; imgWrap.id = 'img-wrap-' + card.id;
@@ -604,17 +603,18 @@ function renderCard(card) {
   saveStatus.className = 'save-status'; saveStatus.id = 'save-status-' + card.id;
   body.appendChild(charaRow); body.appendChild(codeRow); body.appendChild(saveStatus);
   el.appendChild(body);
+  wrap.appendChild(el);
 
   // 長押しで削除モード、削除モード中タップで選択
   let pressTimer;
-  el.addEventListener('pointerdown', () => {
+  wrap.addEventListener('pointerdown', () => {
     if (deleteMode) return;
     pressTimer = setTimeout(() => enterDeleteMode(), 600);
   });
-  el.addEventListener('pointerup',     () => clearTimeout(pressTimer));
-  el.addEventListener('pointermove',   () => clearTimeout(pressTimer));
-  el.addEventListener('pointercancel', () => clearTimeout(pressTimer));
-  el.addEventListener('click', () => { if (deleteMode) toggleSelect(card); });
+  wrap.addEventListener('pointerup',     () => clearTimeout(pressTimer));
+  wrap.addEventListener('pointermove',   () => clearTimeout(pressTimer));
+  wrap.addEventListener('pointercancel', () => clearTimeout(pressTimer));
+  wrap.addEventListener('click', () => { if (deleteMode) toggleSelect(card); });
 
   charaInput.addEventListener('input', () => {
     card.charaName = charaInput.value.trim(); updateCardBadge(card); updateCardStyle(card);
@@ -634,7 +634,7 @@ function renderCard(card) {
   updateCardBadge(card); updateCardStyle(card);
   const isComplete = !!(card.charaName && card.codeName);
   const targetGrid = isComplete ? document.getElementById('done-grid') : document.getElementById('pending-grid');
-  targetGrid.appendChild(el);
+  targetGrid.appendChild(wrap);
   updateSections();
 }
 
@@ -664,10 +664,10 @@ function updateCardStyle(card) {
 }
 
 function moveCardToSection(card) {
-  const el = document.getElementById('card-' + card.id); if (!el) return;
+  const wrap = document.getElementById('wrap-' + card.id); if (!wrap) return;
   const isComplete = !!(card.charaName && card.codeName) && card.status !== 'error';
   const targetGrid = isComplete ? document.getElementById('done-grid') : document.getElementById('pending-grid');
-  if (el.parentElement !== targetGrid) targetGrid.appendChild(el);
+  if (wrap.parentElement !== targetGrid) targetGrid.appendChild(wrap);
 }
 
 function updateSections() {
