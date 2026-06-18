@@ -111,6 +111,27 @@
     '        <span class="toggle-slider"></span>',
     '      </label>',
     '    </div>',
+    '    <div class="settings-divider"></div>',
+    '    <div class="settings-img-upload-block">',
+    '      <div class="settings-item-title">アプリアイコン（icon.png）</div>',
+    '      <div class="settings-img-upload-row">',
+    '        <img id="preview-icon" src="icon.png" onerror="this.style.background=\'#f3e6f0\'" style="width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid #eee;flex-shrink:0">',
+    '        <label class="settings-img-pick-btn" for="input-icon">画像を選ぶ</label>',
+    '        <input type="file" id="input-icon" accept="image/*" style="display:none">',
+    '        <button class="settings-img-send-btn" id="btn-icon" disabled>アップロード</button>',
+    '      </div>',
+    '      <div class="settings-img-status" id="status-icon"></div>',
+    '    </div>',
+    '    <div class="settings-img-upload-block">',
+    '      <div class="settings-item-title">OGP画像（ogp.png）</div>',
+    '      <div class="settings-img-upload-row">',
+    '        <img id="preview-ogp" src="ogp.png" onerror="this.style.background=\'#f3e6f0\'" style="width:80px;height:44px;border-radius:6px;object-fit:cover;border:1px solid #eee;flex-shrink:0">',
+    '        <label class="settings-img-pick-btn" for="input-ogp">画像を選ぶ</label>',
+    '        <input type="file" id="input-ogp" accept="image/*" style="display:none">',
+    '        <button class="settings-img-send-btn" id="btn-ogp" disabled>アップロード</button>',
+    '      </div>',
+    '      <div class="settings-img-status" id="status-ogp"></div>',
+    '    </div>',
     '  </div>',
     '</div>'
   ].join("\n");
@@ -244,6 +265,80 @@
     });
     $("delete-cancel-btn").addEventListener("click", exitDeleteMode);
     $("delete-exec-btn").addEventListener("click", execDelete);
+    bindImageUpload("input-icon", "btn-icon", "preview-icon", "status-icon", "icon");
+    bindImageUpload("input-ogp",  "btn-ogp",  "preview-ogp",  "status-ogp",  "ogp");
+  }
+
+  // ===== Canvas経由でPNG変換 → base64 =====
+  function convertToPngBase64(file) {
+    return new Promise(function(resolve, reject) {
+      var img = new Image();
+      var objUrl = URL.createObjectURL(file);
+      img.onload = function() {
+        var canvas = document.createElement("canvas");
+        canvas.width  = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        URL.revokeObjectURL(objUrl);
+        var dataUrl = canvas.toDataURL("image/png");
+        resolve(dataUrl.split(",")[1]);
+      };
+      img.onerror = function() { URL.revokeObjectURL(objUrl); reject(new Error("画像読み込み失敗")); };
+      img.src = objUrl;
+    });
+  }
+
+  function bindImageUpload(inputId, btnId, previewId, statusId, imageType) {
+    var input   = document.getElementById(inputId);
+    var btn     = document.getElementById(btnId);
+    var preview = document.getElementById(previewId);
+    var status  = document.getElementById(statusId);
+    var base64  = null;
+
+    input.addEventListener("change", function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      status.textContent = "変換中…";
+      status.style.color = "#aaa";
+      btn.disabled = true;
+      convertToPngBase64(file).then(function(b64) {
+        base64 = b64;
+        preview.src = "data:image/png;base64," + b64;
+        btn.disabled = false;
+        status.textContent = "選択済み（アップロードボタンで確定）";
+        status.style.color = "#999";
+      }).catch(function(err) {
+        status.textContent = "変換失敗: " + err.message;
+        status.style.color = "#e06f6f";
+      });
+    });
+
+    btn.addEventListener("click", function() {
+      if (!base64) return;
+      btn.disabled = true;
+      status.textContent = "アップロード中…";
+      status.style.color = "#aaa";
+      gasPost({
+        action:     "upload_image",
+        folderName: CONFIG.folder,
+        imageType:  imageType,
+        base64:     base64,
+      }).then(function(data) {
+        if (data.status === "ok") {
+          status.textContent = "✓ アップロード完了";
+          status.style.color = "#4caf50";
+          showToast(imageType === "icon" ? "アイコンを更新しました" : "OGP画像を更新しました");
+        } else {
+          status.textContent = "エラー: " + (data.message || "失敗");
+          status.style.color = "#e06f6f";
+          btn.disabled = false;
+        }
+      }).catch(function() {
+        status.textContent = "通信エラー";
+        status.style.color = "#e06f6f";
+        btn.disabled = false;
+      });
+    });
   }
 
   function trimByQR(blob) {
