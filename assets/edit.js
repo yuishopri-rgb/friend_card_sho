@@ -32,9 +32,9 @@
   document.title = CONFIG.appName;
   document.body.className = "pad-bottom";
   document.body.innerHTML = [
-    '<div class="full-loading" id="full-loading"><span class="spin" style="font-size:32px">⏳</span><div class="msg" id="full-loading-msg">よみこみ中…</div></div>',
+    '<div class="full-loading" id="full-loading"><span class="spin" style="font-size:32px"></span><div class="msg" id="full-loading-msg">読み込み中…</div></div>',
     '<div class="auth-screen" id="auth-screen">',
-    '  <div class="auth-logo">💕</div>',
+    '  <div class="auth-logo"></div>',
     '  <div class="auth-title" id="auth-app-name"></div>',
     '  <div class="auth-sub">パスワードを入力してね</div>',
     '  <div class="auth-box">',
@@ -59,7 +59,7 @@
     '  </div>',
     '  <div class="upload-zone" id="upload-zone">',
     '    <input type="file" id="file-input" accept="image/*" multiple>',
-    '    <div class="upload-icon">🖼️</div>',
+    '    ',
     '    <div class="upload-label">画像を選択</div>',
     '    <div class="upload-sub">カメラロールから複数選べます</div>',
     '  </div>',
@@ -75,8 +75,8 @@
     '    <div class="section-title">登録済み <span class="badge done" id="done-badge">0</span></div>',
     '    <div class="grid" id="done-grid"></div>',
     '  </div>',
-    '  <div class="empty-state" id="empty-state" style="display:none"><span class="ico">💕</span>上の画像ボタンから<br>フレカ写真を選んでね</div>',
-    '  <div class="loading-sheet" id="loading-sheet"><span class="spin">⏳</span> 既存データを読み込み中…</div>',
+    '  <div class="empty-state" id="empty-state" style="display:none"><span class="ico"></span>上の画像ボタンから<br>フレカ写真を選んでね</div>',
+    '  <div class="loading-sheet" id="loading-sheet"><span class="spin" style="display:inline-block;border:2px solid #f9a8c9;border-top-color:transparent;border-radius:50%;width:18px;height:18px;animation:spin 0.8s linear infinite"></span> 既存データを読み込み中…</div>',
     '</div>',
     '<div class="toast" id="toast"></div>'
   ].join("\n");
@@ -153,7 +153,7 @@
     $("auth-screen").classList.remove("show");
     $("full-loading").classList.add("hide");
     $("main-content").style.display = "";
-    $("header-title").textContent = "📸 " + CONFIG.appName;
+    $("header-title").textContent =  CONFIG.appName;
     bindUploadEvents();
     loadExistingCards();
   }
@@ -407,7 +407,7 @@
     if (card.status === "uploading") {
       var ov = document.createElement("div");
       ov.className = "uploading-overlay"; ov.id = "overlay-" + card.id;
-      ov.innerHTML = '<span class="spin">⏳</span>';
+      ov.innerHTML = '<span class="spin"></span>';
       imgWrap.appendChild(ov);
     }
     var badge = document.createElement("div");
@@ -432,7 +432,7 @@
     if (!badge) return;
     var complete = !!(card.charaName && card.codeName);
     if (card.status === "error") { badge.textContent = "エラー"; badge.className = "card-status-badge error"; }
-    else if (card.status === "uploading") { badge.textContent = "⏳"; badge.className = "card-status-badge"; }
+    else if (card.status === "uploading") { badge.textContent = ""; badge.className = "card-status-badge"; }
     else if (complete) { badge.textContent = "登録済"; badge.className = "card-status-badge done"; }
     else { badge.textContent = "未入力"; badge.className = "card-status-badge"; }
   }
@@ -508,7 +508,7 @@
     var ids = Object.keys(selectedIds);
     var urls = ids.map(function(id){ return cardMap[id] && cardMap[id].url; }).filter(Boolean);
     var btn = $("delete-exec-btn");
-    btn.disabled = true; btn.textContent = "削除中…";
+    btn.disabled = true; btn.textContent = "削除中";
     gasPostFire({ action: "delete", folder: CONFIG.folder, urls: urls })
       .then(function(){
         ids.forEach(function(id){
