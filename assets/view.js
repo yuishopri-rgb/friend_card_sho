@@ -177,7 +177,7 @@
       card.className = "card";
       // d.url がCloudinaryのURL（GASフィールド名は url）
       var imgHtml = d.url
-        ? '<img src="' + esc(thumbUrl(d.url)) + '" alt="' + esc(d.code || "") + '" loading="lazy" decoding="async" onload="this.classList.add(\'loaded\')">'
+        ? '<img src="' + esc(d.url) + '" alt="' + esc(d.code || "") + '" loading="lazy" decoding="async" onload="this.classList.add(\'loaded\')">'
         : '<div class="no-img">' + HEART_ICO + '</div>';
       card.innerHTML =
         '<div class="card-img">' + imgHtml + '</div>' +
@@ -198,7 +198,7 @@
     if (currentPage < total) {
       var next = list.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
       next.forEach(function(d){
-        if (d.url) { var im = new Image(); im.src = thumbUrl(d.url); }
+        if (d.url) { var im = new Image(); im.src = d.url; }
       });
     }
   }
