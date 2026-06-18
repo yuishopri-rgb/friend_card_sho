@@ -269,40 +269,93 @@
     });
   }
 
+  var PARALLEL = 5; // 同時アップロード数
+  var isUploading = false;
+
+  // 画面離脱防止
+  function onBeforeUnload(e) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+  function lockPage()   { isUploading = true;  window.addEventListener("beforeunload", onBeforeUnload); }
+  function unlockPage() { isUploading = false; window.removeEventListener("beforeunload", onBeforeUnload); }
+
   function handleFiles(files) {
     if (!files.length) return;
+    if (isUploading) { showToast("アップロード中です。完了をお待ちください"); return; }
+
     var pw = $("progress-wrap"), pb = $("progress-bar"), pl = $("progress-label");
+    var warn = document.createElement("div");
+    warn.id = "upload-warn";
+    warn.style.cssText = "font-size:11px;color:#e06f6f;text-align:center;padding:6px 12px;";
+    warn.textContent = "アップロード中です。この画面を離れないでください";
+    pw.parentNode.insertBefore(warn, pw.nextSibling);
+
     pw.classList.add("show");
     var done = 0, total = files.length;
     pl.textContent = "アップロード中… 0 / " + total;
     pb.style.width = "0%";
+    lockPage();
 
-    var chain = Promise.resolve();
-    files.forEach(function(file){
-      chain = chain.then(function(){
-        var id = "new-" + Date.now() + "-" + Math.random().toString(36).slice(2);
-        var card = { id: id, blob: null, url: null, charaName: "", codeName: "", status: "uploading" };
-        cardMap[id] = card;
-        renderCard(card);
-        return trimByQR(file)
-          .then(function(trimmed){ card.blob = trimmed; return uploadToCloudinary(trimmed, file.name); })
-          .then(function(url){
-            card.url = url; card.status = "done";
-            return saveCard(card).catch(function(){});
-          })
-          .catch(function(err){ card.status = "error"; console.error("upload error", err); })
-          .then(function(){
-            done++;
-            pl.textContent = "アップロード中… " + done + " / " + total;
-            pb.style.width = (done / total * 100) + "%";
-            updateCardImage(card); updateCardBadge(card); updateCardStyle(card);
-            moveCardToSection(card); updateSections();
-          });
-      });
+    // カードを先に全部生成
+    var cards = Array.prototype.slice.call(files).map(function(file){
+      var id = "new-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+      var card = { id: id, blob: null, url: null, charaName: "", codeName: "", status: "uploading", file: file };
+      cardMap[id] = card;
+      renderCard(card);
+      return card;
     });
-    chain.then(function(){
+    updateSections();
+
+    // PARALLEL枚ずつ並列処理
+    function processCard(card) {
+      return trimByQR(card.file)
+        .then(function(trimmed){
+          card.blob = trimmed;
+          return uploadToCloudinary(trimmed, card.file.name);
+        })
+        .then(function(url){
+          card.url = url; card.status = "done";
+          return saveCard(card).catch(function(){});
+        })
+        .catch(function(err){
+          card.status = "error";
+          console.error("upload error", card.file.name, err);
+        })
+        .then(function(){
+          done++;
+          pl.textContent = "アップロード中… " + done + " / " + total;
+          pb.style.width = (done / total * 100) + "%";
+          updateCardImage(card); updateCardBadge(card); updateCardStyle(card);
+          moveCardToSection(card); updateSections();
+        });
+    }
+
+    // キューを PARALLEL 並列で処理
+    var queue = cards.slice();
+    var active = 0;
+    var resolve;
+    var allDone = new Promise(function(r){ resolve = r; });
+
+    function next() {
+      while (active < PARALLEL && queue.length) {
+        active++;
+        var card = queue.shift();
+        processCard(card).then(function(){
+          active--;
+          if (queue.length) { next(); }
+          else if (active === 0) { resolve(); }
+        });
+      }
+    }
+    next();
+
+    allDone.then(function(){
       pw.classList.remove("show");
-      showToast(done + "枚アップロード完了！");
+      var w = $("upload-warn");
+      if (w) w.remove();
+      unlockPage();
+      showToast(total + "枚アップロード完了");
     });
   }
 
