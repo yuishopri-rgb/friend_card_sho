@@ -23,6 +23,19 @@
   var AUTH_TOKEN_KEY  = "freca_auth_token_" + BOOT.folder;
   var AUTH_DATE_KEY   = "freca_auth_date_"  + BOOT.folder;
   var LAST_CHARA_KEY  = "freca_last_chara_" + BOOT.folder;
+  var SETTINGS_KEY    = "freca_settings_"   + BOOT.folder;
+
+  // ---- 設定管理 ----
+  function loadSettings() {
+    try {
+      var s = localStorage.getItem(SETTINGS_KEY);
+      return s ? JSON.parse(s) : { autoChara: true };
+    } catch(e) { return { autoChara: true }; }
+  }
+  function saveSettings(settings) {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch(e) {}
+  }
+  var settings = loadSettings();
 
   var cardMap = {};
   var deleteMode = false;
@@ -50,6 +63,7 @@
     '    <div class="header-top">',
     '      <div class="header-title" id="header-title"></div>',
     '      <button class="header-btn" id="delete-mode-btn">削除</button>',
+    '      <button class="header-btn" id="settings-btn" aria-label="設定" style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>',
     '    </div>',
     '    <div class="header-sub">画像を選んでアップロードしてね</div>',
     '  </header>',
@@ -79,7 +93,26 @@
     '  <div class="empty-state" id="empty-state" style="display:none"><span class="ico"></span>上の画像ボタンから<br>フレカ写真を選んでね</div>',
     '  <div class="loading-sheet" id="loading-sheet"><span class="spin" style="display:inline-block;border:2px solid #f9a8c9;border-top-color:transparent;border-radius:50%;width:18px;height:18px;animation:spin 0.8s linear infinite"></span> 既存データを読み込み中…</div>',
     '</div>',
-    '<div class="toast" id="toast"></div>'
+    '<div class="toast" id="toast"></div>',
+    '<div class="settings-overlay" id="settings-overlay"></div>',
+    '<div class="settings-panel" id="settings-panel">',
+    '  <div class="settings-header">',
+    '    <div class="settings-header-title">設定</div>',
+    '    <button class="settings-close-btn" id="settings-close-btn">×</button>',
+    '  </div>',
+    '  <div class="settings-body">',
+    '    <div class="settings-item">',
+    '      <div class="settings-item-label">',
+    '        <div class="settings-item-title">キャラ名 自動入力</div>',
+    '        <div class="settings-item-desc">最後に入力したキャラ名を<br>次回のカードに自動入力する</div>',
+    '      </div>',
+    '      <label class="toggle">',
+    '        <input type="checkbox" id="toggle-auto-chara">',
+    '        <span class="toggle-slider"></span>',
+    '      </label>',
+    '    </div>',
+    '  </div>',
+    '</div>'
   ].join("\n");
 
   var $ = function (id) { return document.getElementById(id); };
@@ -200,6 +233,15 @@
       handleFiles(Array.prototype.slice.call(e.dataTransfer.files).filter(function(f){ return f.type.indexOf("image/") === 0; }));
     });
     $("delete-mode-btn").addEventListener("click", enterDeleteMode);
+    $("settings-btn").addEventListener("click", openSettings);
+    $("settings-close-btn").addEventListener("click", closeSettings);
+    $("settings-overlay").addEventListener("click", closeSettings);
+    var toggleAutoChara = $("toggle-auto-chara");
+    toggleAutoChara.checked = settings.autoChara;
+    toggleAutoChara.addEventListener("change", function(){
+      settings.autoChara = toggleAutoChara.checked;
+      saveSettings(settings);
+    });
     $("delete-cancel-btn").addEventListener("click", exitDeleteMode);
     $("delete-exec-btn").addEventListener("click", execDelete);
   }
@@ -270,6 +312,15 @@
     });
   }
 
+  function openSettings() {
+    $("settings-overlay").classList.add("open");
+    $("settings-panel").classList.add("open");
+  }
+  function closeSettings() {
+    $("settings-overlay").classList.remove("open");
+    $("settings-panel").classList.remove("open");
+  }
+
   var PARALLEL = 5; // 同時アップロード数
   var isUploading = false;
 
@@ -302,7 +353,7 @@
     var cards = Array.prototype.slice.call(files).map(function(file){
       var id = "new-" + Date.now() + "-" + Math.random().toString(36).slice(2);
       var lastChara = "";
-      try { lastChara = localStorage.getItem(LAST_CHARA_KEY) || ""; } catch(e) {}
+      try { if (settings.autoChara) lastChara = localStorage.getItem(LAST_CHARA_KEY) || ""; } catch(e) {}
       var card = { id: id, blob: null, url: null, charaName: lastChara, codeName: "", status: "uploading", file: file };
       cardMap[id] = card;
       renderCard(card);
@@ -422,7 +473,7 @@
     codeInput.addEventListener("input",  function(){ card.codeName  = codeInput.value.trim();  updateCardBadge(card); updateCardStyle(card); });
     charaInput.addEventListener("blur", function(){
       card.charaName = charaInput.value.trim();
-      if (card.charaName) {
+      if (card.charaName && settings.autoChara) {
         try { localStorage.setItem(LAST_CHARA_KEY, card.charaName); } catch(e) {}
       }
       afterEdit(card);
