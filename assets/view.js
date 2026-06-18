@@ -145,7 +145,7 @@
         var fresh = res.rows || [];
         var freshStr = JSON.stringify(fresh);
         var currentStr = JSON.stringify(allData);
-        if (freshStr !== currentStr) applyData(fresh);
+        if (forceReload || freshStr !== currentStr) applyData(fresh);
         try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data: fresh })); } catch (e) {}
       })
       .catch(function(e){
