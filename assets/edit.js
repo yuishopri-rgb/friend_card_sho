@@ -20,8 +20,9 @@
     uploadPreset: null,
     sheetName:    null,
   };
-  var AUTH_TOKEN_KEY = "freca_auth_token_" + BOOT.folder;
-  var AUTH_DATE_KEY  = "freca_auth_date_"  + BOOT.folder;
+  var AUTH_TOKEN_KEY  = "freca_auth_token_" + BOOT.folder;
+  var AUTH_DATE_KEY   = "freca_auth_date_"  + BOOT.folder;
+  var LAST_CHARA_KEY  = "freca_last_chara_" + BOOT.folder;
 
   var cardMap = {};
   var deleteMode = false;
@@ -300,7 +301,9 @@
     // カードを先に全部生成
     var cards = Array.prototype.slice.call(files).map(function(file){
       var id = "new-" + Date.now() + "-" + Math.random().toString(36).slice(2);
-      var card = { id: id, blob: null, url: null, charaName: "", codeName: "", status: "uploading", file: file };
+      var lastChara = "";
+      try { lastChara = localStorage.getItem(LAST_CHARA_KEY) || ""; } catch(e) {}
+      var card = { id: id, blob: null, url: null, charaName: lastChara, codeName: "", status: "uploading", file: file };
       cardMap[id] = card;
       renderCard(card);
       return card;
@@ -416,8 +419,14 @@
     var charaInput = body.querySelector("#chara-" + card.id);
     var codeInput  = body.querySelector("#code-" + card.id);
     charaInput.addEventListener("input", function(){ card.charaName = charaInput.value.trim(); updateCardBadge(card); updateCardStyle(card); });
-    codeInput.addEventListener("input", function(){ card.codeName = codeInput.value.trim(); updateCardBadge(card); updateCardStyle(card); });
-    charaInput.addEventListener("blur", function(){ card.charaName = charaInput.value.trim(); afterEdit(card); });
+    codeInput.addEventListener("input",  function(){ card.codeName  = codeInput.value.trim();  updateCardBadge(card); updateCardStyle(card); });
+    charaInput.addEventListener("blur", function(){
+      card.charaName = charaInput.value.trim();
+      if (card.charaName) {
+        try { localStorage.setItem(LAST_CHARA_KEY, card.charaName); } catch(e) {}
+      }
+      afterEdit(card);
+    });
     codeInput.addEventListener("blur", function(){ card.codeName = codeInput.value.trim(); afterEdit(card); });
 
     // 長押し削除モード + 選択
