@@ -313,6 +313,10 @@
   }
 
   function openSettings() {
+    // コンテンツエリアの右端に合わせてパネルを配置
+    var bodyRect = document.body.getBoundingClientRect();
+    var panelRight = Math.max(0, window.innerWidth - bodyRect.right);
+    $("settings-panel").style.right = panelRight + "px";
     $("settings-overlay").classList.add("open");
     $("settings-panel").classList.add("open");
   }
