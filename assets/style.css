@@ -421,3 +421,10 @@ body {
   min-height: 16px;
   margin-top: 4px;
 }
+
+.settings-img-hint {
+  font-size: 11px;
+  color: #bbb;
+  margin-top: 2px;
+}
+
