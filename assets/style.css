@@ -375,3 +375,49 @@ body {
 }
 .toggle input:checked + .toggle-slider { background: var(--pink); }
 .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+/* ===== 設定パネル：画像アップロード ===== */
+.settings-divider {
+  height: 1px;
+  background: #f3e6f0;
+  margin: 8px 0;
+}
+.settings-img-upload-block {
+  padding: 12px 0 8px;
+}
+.settings-img-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.settings-img-pick-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  background: #f9b8d4;
+  color: #fff;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.settings-img-send-btn {
+  padding: 6px 14px;
+  background: #fff;
+  color: #f9b8d4;
+  border: 1.5px solid #f9b8d4;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.settings-img-send-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.settings-img-status {
+  font-size: 12px;
+  color: #999;
+  min-height: 16px;
+  margin-top: 4px;
+}
