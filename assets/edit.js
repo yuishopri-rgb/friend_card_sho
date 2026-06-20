@@ -762,7 +762,12 @@
       var img = document.createElement("img");
       img.alt = "";
       img.onload = function(){ img.classList.add("loaded"); };
-      img.src = card.url ? thumbUrl(card.url) : URL.createObjectURL(card.blob);
+      if (card.blob) {
+        img.src = URL.createObjectURL(card.blob);
+      } else {
+        // data-srcに保持し、updateSectionsで表示時にsrcをセットする
+        img.dataset.src = thumbUrl(card.url);
+      }
       imgWrap.appendChild(img);
     } else {
       var ni = document.createElement("div");
@@ -890,7 +895,23 @@
       if (wrap) { wrap.style.display = ""; dg.appendChild(wrap); }
     });
 
-    // 非表示カードはstashに残したまま
+    // 表示カードの画像だけ読み込む（非表示カードはsrc解除）
+    allCards.forEach(function(c){
+      var img = document.querySelector("#img-wrap-" + c.id + " img[data-src]");
+      if (!img) return;
+      if (visibleIds[c.id]) {
+        if (!img.dataset.loaded) {
+          img.src = img.dataset.src;
+          img.dataset.loaded = "1";
+        }
+      } else {
+        if (img.dataset.loaded) {
+          img.removeAttribute("src");
+          img.classList.remove("loaded");
+          delete img.dataset.loaded;
+        }
+      }
+    });
 
     $("pending-section").style.display = pendingAll.length ? "" : "none";
     $("done-section").style.display    = (!filterPending && doneAll.length) ? "" : "none";
@@ -1103,7 +1124,7 @@
             var WHITE_TO   = 0.6;  // ★ 白塗り終了位置（上から何%）★
             var whiteY = y + Math.round(CARD_H * WHITE_FROM);
             var whiteH = Math.round(CARD_H * (WHITE_TO - WHITE_FROM));
-            // ★ 白塗りの透明度：0.92 = ほぼ不透明。0.0で完全透明、1.0で完全不透明 ★
+            // ★ 白塗りの透明度：1 = 完全不透明。0.0で完全透明、1.0で完全不透明 ★
             ctx.fillStyle = "rgba(255,255,255,1)";
             ctx.fillRect(x, whiteY, CARD_W, whiteH);
 
