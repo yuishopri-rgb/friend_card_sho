@@ -672,7 +672,6 @@
               status: "done",
             };
             cardMap[card.id] = card;
-            renderCard(card);
           });
         }
       })
@@ -735,16 +734,10 @@
     });
 
     updateCardBadge(card); updateCardStyle(card);
-    // stashに入れてからupdateSectionsで振り分け
-    var stash = document.getElementById("card-stash");
-    if (!stash) {
-      stash = document.createElement("div");
-      stash.id = "card-stash";
-      stash.style.display = "none";
-      document.body.appendChild(stash);
-    }
-    stash.appendChild(wrap);
-    updateSections();
+
+    // bodyに仮追加（非表示）→ updateSectionsがグリッドに配置する
+    wrap.style.display = "none";
+    document.body.appendChild(wrap);
   }
 
   function makeInputRow(label, id, ph, val) {
@@ -856,22 +849,7 @@
   }
 
   function updateSections() {
-    // stash確保（なければ作る）
-    var stash = document.getElementById("card-stash");
-    if (!stash) {
-      stash = document.createElement("div");
-      stash.id = "card-stash";
-      stash.style.display = "none";
-      document.body.appendChild(stash);
-    }
-
     var allCards = Object.keys(cardMap).map(function(id){ return cardMap[id]; });
-
-    // 全カードをstashに回収してからグリッドをクリア
-    allCards.forEach(function(c){
-      var wrap = document.getElementById("wrap-" + c.id);
-      if (wrap) stash.appendChild(wrap);
-    });
 
     // セクション別に分類（検索・フィルター適用）
     var pendingAll = allCards.filter(function(c){
@@ -899,29 +877,24 @@
     dg.innerHTML = "";
 
     pendingVisible.forEach(function(c){
-      var wrap = $("wrap-" + c.id);
+      var wrap = document.getElementById("wrap-" + c.id);
+      if (!wrap) renderCard(c);
+      wrap = document.getElementById("wrap-" + c.id);
       if (wrap) { wrap.style.display = ""; pg.appendChild(wrap); }
     });
     doneVisible.forEach(function(c){
-      var wrap = $("wrap-" + c.id);
+      var wrap = document.getElementById("wrap-" + c.id);
+      if (!wrap) renderCard(c);
+      wrap = document.getElementById("wrap-" + c.id);
       if (wrap) { wrap.style.display = ""; dg.appendChild(wrap); }
     });
 
-    // 表示カードの画像だけ読み込む（非表示カードはsrc解除）
-    allCards.forEach(function(c){
+    // 表示カードの画像を読み込む
+    pendingVisible.concat(doneVisible).forEach(function(c){
       var img = document.querySelector("#img-wrap-" + c.id + " img[data-src]");
-      if (!img) return;
-      if (visibleIds[c.id]) {
-        if (!img.dataset.loaded) {
-          img.src = img.dataset.src;
-          img.dataset.loaded = "1";
-        }
-      } else {
-        if (img.dataset.loaded) {
-          img.removeAttribute("src");
-          img.classList.remove("loaded");
-          delete img.dataset.loaded;
-        }
+      if (img && !img.dataset.loaded) {
+        img.src = img.dataset.src;
+        img.dataset.loaded = "1";
       }
     });
 
