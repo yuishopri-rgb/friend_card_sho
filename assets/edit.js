@@ -1099,8 +1099,8 @@
           if (text) {
             // ★ 白塗り範囲の調整：上端と下端を0.0〜1.0で指定（0.0=カード上端、1.0=カード下端）★
             // 例）0.80〜0.95 → 下の方15%を白塗り / 0.30〜0.50 → 中央あたりを白塗り
-            var WHITE_FROM = 0.4;  // ★ 白塗り開始位置（上から何%）★
-            var WHITE_TO   = 0.5;  // ★ 白塗り終了位置（上から何%）★
+            var WHITE_FROM = 0.5;  // ★ 白塗り開始位置（上から何%）★
+            var WHITE_TO   = 0.6;  // ★ 白塗り終了位置（上から何%）★
             var whiteY = y + Math.round(CARD_H * WHITE_FROM);
             var whiteH = Math.round(CARD_H * (WHITE_TO - WHITE_FROM));
             // ★ 白塗りの透明度：0.92 = ほぼ不透明。0.0で完全透明、1.0で完全不透明 ★
@@ -1173,30 +1173,30 @@
   }
 
   function saveHistory(dataUrl, codeNames) {
-    // サムネイル化してlocalStorageに保存（フルサイズはデータが大きすぎるため）
+    // サムネイル化してlocalStorageに保存（フルサイズはデータが大きすぎるため保存しない）
     var thumbImg = new Image();
     thumbImg.onload = function(){
       var tc = document.createElement("canvas");
-      var scale = 300 / thumbImg.width;
-      tc.width = 300;
+      var scale = 400 / thumbImg.width;
+      tc.width = 400;
       tc.height = Math.round(thumbImg.height * scale);
       tc.getContext("2d").drawImage(thumbImg, 0, 0, tc.width, tc.height);
-      var thumbUrl = tc.toDataURL("image/jpeg", 0.7);
+      var thumbUrl = tc.toDataURL("image/jpeg", 0.75);
       var history = loadHistory();
       history.unshift({
         thumb: thumbUrl,
-        full: dataUrl,
         text: codeNames,
         date: new Date().toLocaleString("ja-JP")
       });
       if (history.length > 10) history = history.slice(0, 10);
-      // fullはデカいのでtry/catchで溢れたらfullを削って保存
       try {
         localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
       } catch(e) {
-        // fullを削ってサムネのみ保存
-        history.forEach(function(h){ delete h.full; });
-        try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e2) {}
+        // 古い履歴を減らして再試行
+        if (history.length > 3) {
+          history = history.slice(0, 3);
+          try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e2) {}
+        }
       }
     };
     thumbImg.src = dataUrl;
@@ -1217,7 +1217,7 @@
           '<div class="history-date">' + esc(h.date) + '</div>' +
           '<img src="' + imgSrc + '" class="history-thumb">';
         item.addEventListener("click", function(){
-          var showSrc = h.full || h.thumb || h.image || "";
+          var showSrc = h.thumb || h.image || "";
           var img = document.createElement("img");
           img.src = showSrc;
           img.style.cssText = "max-width:100%;max-height:50vh;object-fit:contain;display:block;border-radius:8px;margin:0 auto;";
