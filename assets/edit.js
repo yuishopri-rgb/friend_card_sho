@@ -835,11 +835,23 @@
     var el = document.getElementById(containerId);
     if (!el) return;
     if (total <= 1) { el.innerHTML = ""; return; }
-    var html = '<button class="pg-btn arrow" ' + (currentPage===1?"disabled":"") + ' onclick="' + fnName + '(' + (currentPage-1) + ')">‹</button>';
-    for (var i = 1; i <= total; i++) {
-      html += '<button class="pg-btn' + (i===currentPage?" active":"") + '" onclick="' + fnName + '(' + i + ')">' + i + '</button>';
+    var p = currentPage;
+    var html = '<button class="pg-btn arrow" ' + (p===1?"disabled":"") + ' onclick="' + fnName + '(' + (p-1) + ')">‹</button>';
+    var pages = [];
+    if (total <= 7) {
+      for (var i = 1; i <= total; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (p > 3) pages.push("...");
+      for (var j = Math.max(2, p-1); j <= Math.min(total-1, p+1); j++) pages.push(j);
+      if (p < total - 2) pages.push("...");
+      pages.push(total);
     }
-    html += '<button class="pg-btn arrow" ' + (currentPage===total?"disabled":"") + ' onclick="' + fnName + '(' + (currentPage+1) + ')">›</button>';
+    pages.forEach(function(v){
+      if (v === "...") html += '<span class="pg-ellipsis">…</span>';
+      else html += '<button class="pg-btn' + (v===p?" active":"") + '" onclick="' + fnName + '(' + v + ')">' + v + '</button>';
+    });
+    html += '<button class="pg-btn arrow" ' + (p===total?"disabled":"") + ' onclick="' + fnName + '(' + (p+1) + ')">›</button>';
     el.innerHTML = html;
   }
 
