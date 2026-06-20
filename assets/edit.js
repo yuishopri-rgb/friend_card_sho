@@ -295,6 +295,15 @@
         CONFIG.appName      = data.appName || CONFIG.appName;
         document.title = CONFIG.appName;
 
+        // サーバーからテーマを適用
+        if (data.theme) {
+          document.documentElement.setAttribute("data-theme", data.theme);
+          localStorage.setItem(THEME_KEY, data.theme);
+        } else {
+          document.documentElement.removeAttribute("data-theme");
+          localStorage.removeItem(THEME_KEY);
+        }
+
         if (!CONFIG.cloudName || !CONFIG.uploadPreset) {
           $("full-loading").innerHTML = '<div class="err">Cloudinary設定が未登録です</div>';
           return;
@@ -341,6 +350,8 @@
             document.documentElement.removeAttribute("data-theme");
             localStorage.removeItem(THEME_KEY);
           }
+          // サーバーに保存（他人のviewにも反映される）
+          gasPost({ action: "save_theme", folder: CONFIG.folder, theme: theme });
         });
       });
     }
