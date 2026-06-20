@@ -5,6 +5,12 @@
 (function () {
   "use strict";
 
+  // テーマ読み込み（即時適用）
+  try {
+    var savedTheme = localStorage.getItem("freca_theme");
+    if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+  } catch(e) {}
+
   var BOOT = window.FRECA_CONFIG || {};
   if (!BOOT.folder || !BOOT.gasUrl) {
     document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#e06f6f;font-family:sans-serif">設定エラー: folder または gasUrl が指定されていません</div>';
@@ -53,7 +59,6 @@
 
   function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
-  // サムネ用（カードグリッド） / フルサイズ（モーダル）
   function thumbUrl(url) {
     return url.replace(/\/upload\/[^\/]+\//, "/upload/c_fill,g_auto,w_400,h_520,q_auto,f_webp/");
   }
@@ -141,7 +146,6 @@
           if (!hasCache) showState("⚠", res.message || "読み込み失敗");
           return;
         }
-        // GASは { chara, code, url } で返す → そのまま使用
         var fresh = res.rows || [];
         var freshStr = JSON.stringify(fresh);
         var currentStr = JSON.stringify(allData);
@@ -159,7 +163,7 @@
     return allData.filter(function(d){
       if (activeFilter !== null && d.chara !== activeFilter) return false;
       if (!q) return true;
-      return matchSearch(d.code || "", q);
+      return matchSearch(String(d.code || ""), q);
     });
   }
 
@@ -175,7 +179,6 @@
     page.forEach(function(d){
       var card = document.createElement("div");
       card.className = "card";
-      // d.url がCloudinaryのURL（GASフィールド名は url）
       var imgHtml = d.url
         ? '<img src="' + esc(d.url) + '" alt="' + esc(d.code || "") + '" loading="lazy" decoding="async" onload="this.classList.add(\'loaded\')">'
         : '<div class="no-img">' + HEART_ICO + '</div>';
@@ -194,7 +197,6 @@
     g.appendChild(frag);
     renderPag(total);
 
-    // 次ページのサムネをプリフェッチ
     if (currentPage < total) {
       var next = list.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
       next.forEach(function(d){
