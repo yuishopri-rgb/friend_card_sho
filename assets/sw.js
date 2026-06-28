@@ -9,6 +9,7 @@ var ASSET_PATHS = [
   "/assets/view.js",
   "/assets/edit.js",
 ];
+
 self.addEventListener("install", function (e) {
   self.skipWaiting();
   e.waitUntil(
@@ -17,6 +18,7 @@ self.addEventListener("install", function (e) {
     })
   );
 });
+
 self.addEventListener("activate", function (e) {
   e.waitUntil(
     caches.keys().then(function (keys) {
@@ -26,9 +28,14 @@ self.addEventListener("activate", function (e) {
     }).then(function () { return self.clients.claim(); })
   );
 });
+
 self.addEventListener("fetch", function (e) {
   var url = e.request.url;
+
+  // GAS API は常にネットワーク（キャッシュしない）
   if (url.indexOf("script.google.com") !== -1) return;
+
+  // Cloudinary画像：cache-first（一度読んだら次回は即時）
   if (url.indexOf("res.cloudinary.com") !== -1) {
     e.respondWith(
       caches.open(CACHE_NAME).then(function (cache) {
@@ -43,6 +50,8 @@ self.addEventListener("fetch", function (e) {
     );
     return;
   }
+
+  // assets（css/js）：stale-while-revalidate
   if (url.indexOf("/assets/") !== -1) {
     e.respondWith(
       caches.open(CACHE_NAME).then(function (cache) {
