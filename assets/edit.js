@@ -711,7 +711,7 @@
       .then(function(r){ return r.json(); })
       .then(function(data){
         if (data.status === "ok" && data.rows && data.rows.length) {
-          data.rows.forEach(function(row){
+          data.rows.slice().reverse().forEach(function(row){
             var card = {
               id: "exist-" + Math.random().toString(36).slice(2),
               blob: null, url: row.url,
