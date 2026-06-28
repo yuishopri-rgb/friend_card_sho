@@ -52,7 +52,8 @@
   var combineMode = false;
   var combineSelected = [];
   var MAX_COMBINE = 8;
-  var HISTORY_KEY = "freca_combine_history_" + BOOT.folder;
+  var HISTORY_KEY  = "freca_combine_history_" + BOOT.folder;
+  var COMMENT_KEY  = "freca_comment_" + BOOT.folder;
   var filterPending = false;
   var PAGE_SIZE_EDIT = 20;
   var pendingPage = 1;
@@ -168,13 +169,22 @@
     '    </div>',
     '    <div class="settings-item">',
     '      <div class="settings-item-label">',
-    '        <div class="settings-item-title">キャラ名 自動入力</div>',
-    '        <div class="settings-item-desc">最後に入力したキャラ名を<br>次回のカードに自動入力する</div>',
+    '        <div class="settings-item-title">マイキャラ名 自動入力</div>',
+    '        <div class="settings-item-desc">最後に入力したマイキャラ名を<br>次回のアップロード時に自動入力する</div>',
     '      </div>',
     '      <label class="toggle">',
     '        <input type="checkbox" id="toggle-auto-chara">',
     '        <span class="toggle-slider"></span>',
     '      </label>',
+    '    </div>',
+    '    <div class="settings-divider"></div>',
+    '    <div class="settings-item" style="flex-direction:column;align-items:flex-start;gap:6px">',
+    '      <div class="settings-item-title">コメント（閲覧ページに表示）</div>',
+    '      <div style="display:flex;gap:8px;width:100%">',
+    '        <input class="input-field" id="comment-input" type="text" placeholder="例：2025年1月更新" style="flex:1;font-size:13px">',
+    '        <button class="settings-img-send-btn" id="comment-save-btn">保存</button>',
+    '      </div>',
+    '      <div class="settings-img-status" id="comment-status"></div>',
     '    </div>',
     '    <div class="settings-divider"></div>',
     '    <div class="settings-img-upload-block">',
@@ -191,13 +201,14 @@
     '    <div class="settings-img-upload-block">',
     '      <div class="settings-item-title">OGP画像（ogp.png）</div>',
     '      <div class="settings-img-hint">推奨サイズ：1200×630px</div>',
+    '      <img id="preview-ogp" src="ogp.png" onerror="this.style.background=\'#f3e6f0\'" style="width:100%;height:80px;border-radius:6px;object-fit:cover;border:1px solid #eee;margin:6px 0 8px">',
     '      <div class="settings-img-upload-row">',
-    '        <img id="preview-ogp" src="ogp.png" onerror="this.style.background=\'#f3e6f0\'" style="width:80px;height:44px;border-radius:6px;object-fit:cover;border:1px solid #eee;flex-shrink:0">',
-    '        <label class="settings-img-pick-btn" for="input-ogp">画像を選ぶ</label>',
     '        <input type="file" id="input-ogp" accept="image/*" style="display:none">',
+    '        <label class="settings-img-pick-btn" for="input-ogp">画像を選ぶ</label>',
     '        <button class="settings-img-send-btn" id="btn-ogp" disabled>アップロード</button>',
     '      </div>',
     '      <div class="settings-img-status" id="status-ogp"></div>',
+    '      <div class="settings-img-hint" style="margin-top:6px">OGP画像がXに反映されるのは1日程度時間がかかる場合があります</div>',
     '    </div>',
     '  </div>',
     '</div>'
@@ -303,6 +314,11 @@
           document.documentElement.removeAttribute("data-theme");
           localStorage.removeItem(THEME_KEY);
         }
+        // コメントを設定パネルに反映
+        if ($("comment-input")) {
+          $("comment-input").value = data.comment || "";
+          try { localStorage.setItem(COMMENT_KEY, data.comment || ""); } catch(e) {}
+        }
 
         if (!CONFIG.cloudName || !CONFIG.uploadPreset) {
           $("full-loading").innerHTML = '<div class="err">Cloudinary設定が未登録です</div>';
@@ -406,6 +422,26 @@
       }
     });
     $("history-btn").addEventListener("click", function(){ $("header-menu").classList.remove("open"); openHistory(); });
+    $("comment-save-btn").addEventListener("click", function(){
+      var comment = $("comment-input").value.trim();
+      var status  = $("comment-status");
+      status.textContent = "保存中…";
+      status.style.color = "#aaa";
+      gasPost({ action: "save_comment", folder: CONFIG.folder, comment: comment })
+        .then(function(data){
+          if (data.status === "ok") {
+            status.textContent = "✓ 保存しました";
+            status.style.color = "#4caf50";
+            try { localStorage.setItem(COMMENT_KEY, comment); } catch(e) {}
+          } else {
+            status.textContent = "エラー";
+            status.style.color = "#e06f6f";
+          }
+        }).catch(function(){
+          status.textContent = "通信エラー";
+          status.style.color = "#e06f6f";
+        });
+    });
     $("history-close").addEventListener("click", function(){
       $("history-overlay").classList.remove("open");
       document.body.style.overflow = "";
