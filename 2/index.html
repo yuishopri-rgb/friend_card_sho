@@ -6,7 +6,7 @@
 <title>ミクコちゃん</title>
 
 <!-- Content Security Policy: XSS二重防御 -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://aipri.jp https://www.takaratomy-arts.co.jp https://yuishopri.com; connect-src 'self' https://raw.githubusercontent.com; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://aipri.jp https://www.takaratomy-arts.co.jp https://yuishopri.com; connect-src 'self' https://raw.githubusercontent.com https://cdn.jsdelivr.net; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
 
 <!-- ファビコン・iOSアイコン -->
 <link rel="icon" href="icon.png" type="image/png">
@@ -56,7 +56,7 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
 .hd{background:var(--bg);padding:calc(8px + var(--safe-top)) 12px 8px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);flex-shrink:0;z-index:10}
 .hd-icon{width:26px;height:26px;background:linear-gradient(135deg,#E0659A,#a78bfa);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;flex-shrink:0}
 .hd-ttl{font-size:15px;font-weight:700;background:linear-gradient(135deg,#E0659A,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hd-status{margin-left:auto;font-size:10px;color:var(--t3);display:flex;align-items:center;gap:4px}
+.hd-status{margin-left:auto;font-size:10px;color:var(--t3);display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--t3);flex-shrink:0}
 .dot.ok{background:#10b981}
 .dot.loading{background:#f59e0b;animation:blink .8s infinite}
@@ -69,8 +69,6 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
 .fb-label{font-size:10px;color:var(--t3);white-space:nowrap;flex-shrink:0;min-width:32px}
 .chip{padding:4px 9px;font-size:11px;border-radius:20px;border:.5px solid var(--bd2);background:var(--bg2);color:var(--t2);cursor:pointer;user-select:none;white-space:nowrap;flex-shrink:0;-webkit-appearance:none}
 .chip.on{background:var(--pk);border-color:var(--pk);color:#fff;font-weight:600}
-.cdot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;flex-shrink:0}
-.cdot.on{border-color:#333}
 .search-row{position:relative;flex-shrink:0}
 .search-row input{width:100%;padding:6px 10px 6px 28px;font-size:13px;border:.5px solid var(--bd2);border-radius:20px;background:var(--bg2);color:var(--t1);outline:none;-webkit-appearance:none}
 .search-row::before{content:'🔍';position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;pointer-events:none}
@@ -102,7 +100,7 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
 .bアクセサリ{background:#FFF9C4;color:#827717}
 .msg{text-align:center;padding:30px 10px;color:var(--t3);font-size:12px;grid-column:1/-1}
 
-/* フローティングプレビュー（スマホ右下） */
+/* フローティングプレビュー（スマホ右下・2倍サイズ） */
 .float-prev{
   position:fixed;right:14px;bottom:calc(14px + var(--safe-bottom));
   width:170px;background:rgba(255,255,255,.97);
@@ -111,25 +109,36 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
   z-index:50;overflow:hidden;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;
   padding:8px 6px 6px;gap:0;
-  transition:transform .3s cubic-bezier(.4,0,.2,1);
-  touch-action:pan-y;
-  will-change:transform;
+  touch-action:none; /* ドラッグ中のスクロール抑止 */
+  transition:transform .22s cubic-bezier(.22,1,.36,1), opacity .22s;
 }
+/* ドラッグ中は追従を優先してトランジションを切る */
+.float-prev.dragging{
+  transition:none;
+  opacity:.94;
+  box-shadow:0 8px 28px rgba(224,101,154,.45);
+}
+/* 右スワイプで隠した状態 */
 .float-prev.hidden{
-  transform:translateX(calc(100% - 28px));
+  transform:translateX(calc(100% + 14px));
+  opacity:.35;
+  pointer-events:none;
 }
-.float-tab{
-  position:absolute;left:0;top:50%;transform:translateY(-50%);
-  width:24px;height:56px;
+/* 隠れているとき画面端に出るつまみ */
+.float-handle{
+  position:fixed;right:0;bottom:calc(80px + var(--safe-bottom));
+  width:26px;height:64px;
   background:var(--pk);
-  border-radius:10px 0 0 10px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:10px;color:#fff;writing-mode:vertical-rl;
-  opacity:0;pointer-events:none;
-  transition:opacity .2s;
-  user-select:none;
+  border-radius:14px 0 0 14px;
+  box-shadow:-2px 2px 12px rgba(224,101,154,.4);
+  z-index:49;
+  display:none;align-items:center;justify-content:center;
+  cursor:pointer;
+  color:#fff;font-size:14px;
+  -webkit-appearance:none;border:none;
 }
-.float-prev.hidden .float-tab{opacity:1;pointer-events:auto;}
+.float-handle.show{display:flex}
+@media(min-width:700px){.float-handle{display:none !important}}
 .float-lbl{font-size:10px;color:var(--pk);font-weight:700;margin-bottom:2px}
 .float-empty{width:155px;height:200px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3);text-align:center;line-height:1.5}
 .fp-slot{display:flex;flex-direction:column;align-items:center;width:155px;position:relative;isolation:isolate}
@@ -228,7 +237,7 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
 <div class="hd">
   <div class="hd-icon">✦</div>
   <div class="hd-ttl">ミクコちゃん</div>
-  <div class="hd-status">
+  <div class="hd-status" id="hd-status" onclick="forceRefresh()" title="タップでデータを再取得">
     <div class="dot loading" id="load-dot"></div>
     <span id="load-txt">読み込み中...</span>
   </div>
@@ -257,18 +266,6 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
     <div class="chip"    id="part-ボトムス"  onclick="setPart('ボトムス')">ボトムス</div>
     <div class="chip"    id="part-シューズ"  onclick="setPart('シューズ')">シューズ</div>
     <div class="chip"    id="part-アクセサリ" onclick="setPart('アクセサリ')">アクセ</div>
-  </div>
-  <div class="fb-row">
-    <span class="fb-label">色</span>
-    <div class="cdot on" id="cd-" style="background:conic-gradient(#FF8FAB,#FFD166,#A0E7E5,#C7CEEA,#fff)" onclick="setColor('')"></div>
-    <div class="cdot" id="cd-ピンク"   style="background:#FF8FAB" onclick="setColor('ピンク')"></div>
-    <div class="cdot" id="cd-イエロー" style="background:#FFD166" onclick="setColor('イエロー')"></div>
-    <div class="cdot" id="cd-ブルー"   style="background:#7EC8E3" onclick="setColor('ブルー')"></div>
-    <div class="cdot" id="cd-グリーン" style="background:#B5EAD7" onclick="setColor('グリーン')"></div>
-    <div class="cdot" id="cd-パープル" style="background:#C7CEEA" onclick="setColor('パープル')"></div>
-    <div class="cdot" id="cd-オレンジ" style="background:#FFB347" onclick="setColor('オレンジ')"></div>
-    <div class="cdot" id="cd-ホワイト" style="background:#f0f0f0;border:.5px solid #ccc" onclick="setColor('ホワイト')"></div>
-    <div class="cdot" id="cd-ブラック" style="background:#555" onclick="setColor('ブラック')"></div>
   </div>
 </div>
 
@@ -304,12 +301,14 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
 
 <!-- フローティングプレビュー（スマホ） -->
 <div class="float-prev" id="float-prev">
-  <div class="float-tab" id="float-tab" onclick="toggleFloat(event)">コーデ</div>
   <div class="float-lbl">コーデ</div>
   <div class="float-empty" id="float-empty">タップして<br>確認・保存</div>
   <div id="float-slots"></div>
   <div class="float-tap" id="float-tap" style="display:none">タップで拡大</div>
 </div>
+
+<!-- 隠した後の復帰つまみ -->
+<button class="float-handle" id="float-handle" onclick="showFloatPrev()" aria-label="プレビューを表示">‹</button>
 
 <!-- 保存画面（白カード1枚絵） -->
 <div class="prev-modal" id="prev-modal">
@@ -325,17 +324,35 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
 </div>
 
 <script>
-const GITHUB_RAW='https://raw.githubusercontent.com/yuishopri-rgb/friend_card_sho/main/2/';
+/* ================================================================
+   データ取得元の設定
+
+   ★ 反映速度を優先する場合（推奨・現在の設定）
+     raw.githubusercontent.com + キャッシュバスター
+     → push後すぐ反映される。ただしアクセスが多いと制限がかかる場合あり
+
+   ★ 表示速度を優先する場合
+     下の GITHUB_RAW をコメントアウトして CDN_RAW を使う
+     → 世界中のCDNから配信されて高速。ただし更新反映に最大12時間かかる
+       （@main を @latest や特定のコミットハッシュにすると挙動が変わる）
+================================================================ */
+const GITHUB_RAW='https://raw.githubusercontent.com/yuishopri-rgb/e34tgea/main/';
+// const GITHUB_RAW='https://cdn.jsdelivr.net/gh/yuishopri-rgb/e34tgea@main/';
+const MANIFEST_URL=GITHUB_RAW+'manifest.json';
+
 
 /* ===== セキュリティ対策 ===== */
+// HTMLエスケープ（XSS対策の基本）
 function esc(s){
   return String(s==null?'':s).replace(/[&<>"']/g, c => ({
     '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
   }[c]));
 }
+// URLバリデーション: http/https のみ許可（javascript: などを弾く）
 function safeUrl(u){
   if(!u) return '';
   const trimmed = String(u).trim();
+  // 先頭が http:// または https:// のもののみ許可
   return /^https?:\/\//i.test(trimmed) ? trimmed : '';
 }
 
@@ -357,47 +374,277 @@ function parseCsv(text){
   return rows;
 }
 
-let ALL=[],fSrc='all',fPart='all',fColor='',fBrand='all';
+let ALL=[],fSrc='all',fPart='all',fBrand='all';
 let coord={},brands=new Set();
+
+/* ================================================================
+   データ読み込み
+
+   ★起動フロー
+     1. localStorage にキャッシュがあれば即座に表示（体感ゼロ待ち）
+     2. 裏で最新データを並列取得
+     3. 差分があれば静かに差し替え
+
+   キャッシュがない初回だけローディング表示が出る
+================================================================ */
+const LS_KEY='mikoko_cache_v1';
+
+// 高速な重複判定用（Setを毎回作り直さない）
+const seenIds=new Set();
+
+function pushRows(rows,file,store,brandSet){
+  const src=/(^|\/)(AP_|APR_|OAP_|APSP_)/.test(file)?'aipri':'primagi';
+  for(const row of rows){
+    const [brand,cardId,name,part,imgUrl]=row;
+    const id=src+'_'+cardId+'_'+part;
+    const validImg=safeUrl(imgUrl);
+    store.push({id,code:cardId,name,part,src,brand,img:validImg});
+    brandSet.add(brand);
+  }
+}
+
+function applyData(items,brandList){
+  ALL=items;
+  brands=new Set(brandList);
+  seenIds.clear();
+  for(const it of ALL) seenIds.add(it.id);
+  renderBrandChips();
+  render();
+}
 
 async function loadData(){
   const dot=document.getElementById('load-dot');
   const txt=document.getElementById('load-txt');
-  dot.className='dot loading';
-  txt.textContent='読み込み中...';
 
-  // アイプリ・プリマジ 各1ファイルを並列fetch
-  const FILES=[
-    {url:GITHUB_RAW+'data/aipri_all.csv',  src:'aipri'},
-    {url:GITHUB_RAW+'data/primagi_all.csv', src:'primagi'},
-  ];
-  const existing=new Set();
-
-  const results = await Promise.allSettled(FILES.map(f=>fetch(f.url+'?v=2').then(r=>{
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    return r.text().then(t=>({text:t,src:f.src}));
-  })));
-
-  for(const result of results){
-    if(result.status==='rejected'){continue;}
-    const {text,src}=result.value;
-    const rows=parseCsv(text);
-    // color列あり(6列)かなし(5列)か自動判定
-    for(const cols of rows){
-      const [brand,cardId,name,part,imgUrl,colorCol]=cols;
-      const id=src+'_'+cardId.trim()+'_'+part;
-      if(existing.has(id))continue;
-      existing.add(id);
-      const validImg=safeUrl(imgUrl);
-      const color=colorCol||'その他';
-      ALL.push({id,code:cardId.trim(),name,part,src,brand,img:validImg,color});
-      brands.add(brand);
+  // ---- STEP1: キャッシュがあれば即表示 ----
+  let hasCache=false;
+  try{
+    const cached=localStorage.getItem(LS_KEY);
+    if(cached){
+      const parsed=JSON.parse(cached);
+      if(parsed&&Array.isArray(parsed.items)&&parsed.items.length){
+        applyData(parsed.items,parsed.brands||[]);
+        dot.className='dot ok';
+        txt.textContent=ALL.length+'件';
+        hasCache=true;
+      }
     }
+  }catch(e){}
+
+  if(!hasCache){
+    dot.className='dot loading';
+    txt.textContent='読み込み中...';
+  }
+
+  // ---- STEP2: 裏で最新データを取得 ----
+  let manifest;
+  try{
+    const res=await fetch(MANIFEST_URL+'?t='+Date.now(),{cache:'no-store'});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    manifest=await res.json();
+  }catch(e){
+    if(!hasCache){
+      dot.className='dot';txt.textContent='manifestエラー';
+      document.getElementById('grid').innerHTML='<div class="msg">manifest.json読み込み失敗<br>'+esc(e.message)+'</div>';
+    }
+    return; // キャッシュ表示済みなら静かに終了
+  }
+
+  const allFiles=[...manifest.files.aipri,...manifest.files.primagi];
+  const total=allFiles.length;
+  let done=0;
+
+  // 並列fetch（直列より圧倒的に速い）
+  const results=await Promise.all(allFiles.map(async({file})=>{
+    try{
+      const res=await fetch(GITHUB_RAW+file+'?t='+Date.now(),{cache:'no-store'});
+      done++;
+      if(!hasCache) txt.textContent=done+'/'+total;
+      if(!res.ok) return null;
+      return {file, rows:parseCsv(await res.text())};
+    }catch(e){
+      done++;
+      if(!hasCache) txt.textContent=done+'/'+total;
+      return null;
+    }
+  }));
+
+  // ---- STEP3: 取得結果を組み立て ----
+  const freshItems=[];
+  const freshBrands=new Set();
+  const freshSeen=new Set();
+  for(const r of results){
+    if(!r) continue;
+    const src=/(^|\/)(AP_|APR_|OAP_|APSP_)/.test(r.file)?'aipri':'primagi';
+    for(const row of r.rows){
+      const [brand,cardId,name,part,imgUrl]=row;
+      const id=src+'_'+cardId+'_'+part;
+      if(freshSeen.has(id)) continue;
+      freshSeen.add(id);
+      freshItems.push({id,code:cardId,name,part,src,brand,img:safeUrl(imgUrl)});
+      freshBrands.add(brand);
+    }
+  }
+
+  if(!freshItems.length){
+    if(!hasCache){
+      dot.className='dot';txt.textContent='データなし';
+    }
+    return;
+  }
+
+  // ---- STEP4: 差分がある場合のみ差し替え ----
+  const freshBrandList=[...freshBrands];
+  // 内容の指紋を取って比較（件数だけだと入れ替わりを検知できない）
+  const fingerprint = freshItems.length+':'+freshItems.map(x=>x.id).join('|');
+  let prevFingerprint='';
+  try{ prevFingerprint = localStorage.getItem(LS_KEY+'_fp')||''; }catch(e){}
+
+  if(!hasCache || fingerprint!==prevFingerprint){
+    applyData(freshItems,freshBrandList);
   }
 
   dot.className='dot ok';
   txt.textContent=ALL.length+'件';
+
+  // ---- STEP5: キャッシュ保存 ----
+  try{
+    localStorage.setItem(LS_KEY,JSON.stringify({
+      items:freshItems,
+      brands:freshBrandList,
+      savedAt:Date.now()
+    }));
+    localStorage.setItem(LS_KEY+'_fp',fingerprint);
+  }catch(e){ /* 容量超過などは無視 */ }
+}
+
+/* ================================================================
+   フローティングプレビューの操作
+   - ドラッグで自由に位置移動
+   - 右へスワイプで画面外に隠す（つまみタップで復帰）
+   - 軽いタップは全画面モーダルを開く
+================================================================ */
+(function(){
+  const el = document.getElementById('float-prev');
+  const handle = document.getElementById('float-handle');
+  if(!el) return;
+
+  const LS_POS = 'mikoko_prev_pos';
+  let dragging=false, moved=false;
+  let startX=0, startY=0;      // ポインタ開始位置
+  let baseLeft=0, baseTop=0;   // 要素の開始位置
+  let curLeft=null, curTop=null;
+
+  // ★調整パラメータ: この距離(px)を超えたらドラッグ扱い（未満はタップ）
+  const TAP_THRESHOLD = 8;
+  // ★調整パラメータ: 右にこの距離(px)スワイプしたら隠す
+  const SWIPE_HIDE_DIST = 70;
+
+  // 保存済み位置を復元
+  try{
+    const saved = JSON.parse(localStorage.getItem(LS_POS)||'null');
+    if(saved && typeof saved.left==='number' && typeof saved.top==='number'){
+      applyPos(saved.left, saved.top);
+    }
+  }catch(e){}
+
+  function applyPos(left, top){
+    // 画面内に収める
+    const w = el.offsetWidth || 170;
+    const h = el.offsetHeight || 200;
+    left = Math.max(4, Math.min(left, window.innerWidth  - w - 4));
+    top  = Math.max(4, Math.min(top,  window.innerHeight - h - 4));
+    el.style.left = left+'px';
+    el.style.top  = top+'px';
+    el.style.right='auto';
+    el.style.bottom='auto';
+    curLeft=left; curTop=top;
+  }
+
+  function savePos(){
+    if(curLeft==null) return;
+    try{ localStorage.setItem(LS_POS, JSON.stringify({left:curLeft, top:curTop})); }catch(e){}
+  }
+
+  function onDown(e){
+    // PC表示（サイドバー）では無効
+    if(window.innerWidth >= 700) return;
+    if(el.classList.contains('hidden')) return;
+    dragging=true; moved=false;
+    const p = e.touches ? e.touches[0] : e;
+    startX=p.clientX; startY=p.clientY;
+    const r = el.getBoundingClientRect();
+    baseLeft=r.left; baseTop=r.top;
+    el.classList.add('dragging');
+  }
+
+  function onMove(e){
+    if(!dragging) return;
+    const p = e.touches ? e.touches[0] : e;
+    const dx = p.clientX - startX;
+    const dy = p.clientY - startY;
+    if(!moved && Math.hypot(dx,dy) > TAP_THRESHOLD) moved=true;
+    if(moved){
+      e.preventDefault();
+      applyPos(baseLeft+dx, baseTop+dy);
+    }
+  }
+
+  function onUp(e){
+    if(!dragging) return;
+    dragging=false;
+    el.classList.remove('dragging');
+
+    const p = e.changedTouches ? e.changedTouches[0] : e;
+    const dx = p.clientX - startX;
+    const dy = p.clientY - startY;
+
+    if(!moved){
+      // タップ扱い → モーダルを開く
+      openPrevModal();
+      return;
+    }
+    // 右へ大きくスワイプしたら隠す（縦移動が小さい場合のみ）
+    if(dx > SWIPE_HIDE_DIST && Math.abs(dy) < Math.abs(dx)){
+      hideFloatPrev();
+      return;
+    }
+    savePos();
+  }
+
+  el.addEventListener('mousedown', onDown);
+  el.addEventListener('touchstart', onDown, {passive:true});
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove, {passive:false});
+  window.addEventListener('mouseup', onUp);
+  window.addEventListener('touchend', onUp);
+
+  // 画面回転・リサイズ時に画面外に出ないよう補正
+  window.addEventListener('resize', ()=>{
+    if(curLeft!=null) applyPos(curLeft, curTop);
+  });
+
+  window.hideFloatPrev = function(){
+    el.classList.add('hidden');
+    handle && handle.classList.add('show');
+  };
+  window.showFloatPrev = function(){
+    el.classList.remove('hidden');
+    handle && handle.classList.remove('show');
+  };
+})();
+
+// ステータス部タップで強制リロード
+function forceRefresh(){
+  try{
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_KEY+'_fp');
+  }catch(e){}
+  ALL=[];brands=new Set();seenIds.clear();
+  document.getElementById('load-dot').className='dot loading';
+  document.getElementById('load-txt').textContent='再取得中...';
   renderBrandChips();render();
+  loadData();
 }
 
 let rPending=false;
@@ -417,7 +664,6 @@ function filtered(){
   return ALL.filter(it=>{
     if(fSrc!=='all'&&it.src!==fSrc)return false;
     if(fPart!=='all'&&it.part!==fPart)return false;
-    if(fColor&&it.color!==fColor)return false;
     if(fBrand!=='all'&&it.brand!==fBrand)return false;
     if(q&&!matchText(it.name,q)&&!matchText(it.code,q))return false;
     return true;
@@ -565,52 +811,8 @@ function renderBrandChips(){
 function setSrc(v){fSrc=v;['all','aipri','primagi'].forEach(k=>document.getElementById('src-'+k).classList.toggle('on',k===v));render();}
 function setPart(v){fPart=v;['all','ワンピース','トップス','ボトムス','シューズ','アクセサリ'].forEach(k=>document.getElementById('part-'+k).classList.toggle('on',k===v));render();}
 function setBrand(v){fBrand=v;renderBrandChips();render();}
-function setColor(v){
-  fColor=fColor===v?'':v;
-  document.querySelectorAll('.cdot').forEach(d=>{d.classList.remove('on');if(d.id==='cd-'+fColor||(fColor===''&&d.id==='cd-'))d.classList.add('on');});
-  render();
-}
 
 renderBrandChips();render();loadData();
-
-/* ===== フローティングプレビュー：スワイプ格納 ===== */
-(function(){
-  const fp=document.getElementById('float-prev');
-  let startX=0,startY=0,isDragging=false,floatHidden=false;
-
-  function toggleFloat(e){
-    if(e)e.stopPropagation();
-    floatHidden=!floatHidden;
-    fp.classList.toggle('hidden',floatHidden);
-  }
-  window.toggleFloat=toggleFloat;
-
-  fp.addEventListener('click',e=>{
-    if(e.target.closest('.float-tab'))return;
-    if(floatHidden){toggleFloat(e);return;}
-    if(!isDragging)openPrevModal();
-  });
-
-  fp.addEventListener('touchstart',e=>{
-    startX=e.touches[0].clientX;
-    startY=e.touches[0].clientY;
-    isDragging=false;
-  },{passive:true});
-
-  fp.addEventListener('touchmove',e=>{
-    const dx=e.touches[0].clientX-startX;
-    const dy=e.touches[0].clientY-startY;
-    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>8)isDragging=true;
-  },{passive:true});
-
-  fp.addEventListener('touchend',e=>{
-    if(!isDragging)return;
-    const dx=e.changedTouches[0].clientX-startX;
-    if(dx>40&&!floatHidden){toggleFloat();}
-    if(dx<-40&&floatHidden){toggleFloat();}
-    isDragging=false;
-  },{passive:true});
-})();
 </script>
 </body>
 </html>
