@@ -639,11 +639,56 @@
     });
   }
 
-  function saveCard(card) {
-    return gasPostFire({
+  // ★ GASへの保存は直列キューで処理（並列だとGAS側で競合・失敗しやすいため）★
+  var saveQueue = Promise.resolve();
+
+  function sendSaveRequest(card, retryCount) {
+    return gasPost({
       action: "save", folder: CONFIG.folder,
       url: card.url || "", charaName: card.charaName || "", codeName: card.codeName || "",
+    }).then(function(data){
+      if (!data || data.status !== "ok") throw new Error((data && data.message) || "保存失敗");
+      return data;
+    }).catch(function(err){
+      if (retryCount < 2) {
+        // ★ 保存失敗時は最大2回まで自動リトライ ★
+        return sendSaveRequest(card, retryCount + 1);
+      }
+      console.error("保存に失敗しました（3回試行）:", card.url, err);
+      throw err;
     });
+  }
+
+  function saveCard(card) {
+    saveQueue = saveQueue.then(function(){
+      return sendSaveRequest(card, 0);
+    }, function(){
+      // 前段が失敗していてもキューは継続させる
+      return sendSaveRequest(card, 0);
+    });
+    return saveQueue;
+  }
+
+  // ★ 複数カードを1リクエストでまとめて保存（新規アップロード完了後にまとめて呼ぶ）★
+  function saveCardsBatch(cards, retryCount) {
+    retryCount = retryCount || 0;
+    var payload = cards.map(function(c){
+      return { url: c.url || "", charaName: c.charaName || "", codeName: c.codeName || "" };
+    }).filter(function(c){ return c.url; });
+    if (!payload.length) return Promise.resolve();
+
+    return gasPost({ action: "save_batch", folder: CONFIG.folder, cards: payload })
+      .then(function(data){
+        if (!data || data.status !== "ok") throw new Error((data && data.message) || "バッチ保存失敗");
+        return data;
+      })
+      .catch(function(err){
+        if (retryCount < 2) {
+          return saveCardsBatch(cards, retryCount + 1);
+        }
+        console.error("バッチ保存に失敗しました（3回試行）:", err);
+        throw err;
+      });
   }
 
   function saveCardWithStatus(card) {
@@ -670,7 +715,7 @@
     $("settings-panel").classList.remove("open");
   }
 
-  var PARALLEL = 1; // 同時アップロード数
+  var PARALLEL = 5; // 同時アップロード数
   var isUploading = false;
 
   // 画面離脱防止
@@ -710,7 +755,7 @@
     });
     updateSections();
 
-    // PARALLEL枚ずつ並列処理
+    // R2アップロードはPARALLEL枚ずつ並列処理。GASへの保存は全完了後に1回のバッチリクエストで送る
     function processCard(card) {
       return trimByQR(card.file)
         .then(function(trimmed){
@@ -719,7 +764,6 @@
         })
         .then(function(url){
           card.url = url; card.status = "done";
-          return saveCard(card).catch(function(){});
         })
         .catch(function(err){
           card.status = "error";
@@ -754,6 +798,17 @@
     next();
 
     allDone.then(function(){
+      // 全カードのR2アップロードが終わったら、成功分だけまとめて1回でGASに保存
+      var successCards = cards.filter(function(c){ return c.status === "done" && c.url; });
+      if (successCards.length) {
+        pl.textContent = "データを保存中…";
+        return saveCardsBatch(successCards).catch(function(){
+          successCards.forEach(function(c){ c.status = "error"; });
+          successCards.forEach(function(c){ updateCardBadge(c); updateCardStyle(c); });
+          showToast("一部のカードの保存に失敗しました");
+        });
+      }
+    }).then(function(){
       pw.classList.remove("show");
       var w = $("upload-warn");
       if (w) w.remove();
