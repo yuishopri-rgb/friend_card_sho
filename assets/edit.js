@@ -670,7 +670,7 @@
     $("settings-panel").classList.remove("open");
   }
 
-  var PARALLEL = 5; // 同時アップロード数
+  var PARALLEL = 1; // 同時アップロード数
   var isUploading = false;
 
   // 画面離脱防止
