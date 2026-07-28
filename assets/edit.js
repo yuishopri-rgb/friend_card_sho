@@ -26,6 +26,8 @@
     cloudName:    null,
     uploadPreset: null,
     sheetName:    null,
+    r2UploadUrl:    null,
+    r2UploadSecret: null,
   };
   var AUTH_TOKEN_KEY  = "freca_auth_token_" + BOOT.folder;
   var AUTH_DATE_KEY   = "freca_auth_date_"  + BOOT.folder;
@@ -291,6 +293,8 @@
         CONFIG.uploadPreset = data.uploadPreset;
         CONFIG.sheetName    = data.sheetName;
         CONFIG.appName      = data.appName || CONFIG.appName;
+        CONFIG.r2UploadUrl    = data.r2UploadUrl;
+        CONFIG.r2UploadSecret = data.r2UploadSecret;
         document.title = CONFIG.appName;
 
         // サーバーからテーマを適用
@@ -307,8 +311,8 @@
           try { localStorage.setItem(COMMENT_KEY, data.comment || ""); } catch(e) {}
         }
 
-        if (!CONFIG.cloudName || !CONFIG.uploadPreset) {
-          $("full-loading").innerHTML = '<div class="err">Cloudinary設定が未登録です</div>';
+        if (!CONFIG.r2UploadUrl || !CONFIG.r2UploadSecret) {
+          $("full-loading").innerHTML = '<div class="err">アップロード設定が未登録です</div>';
           return;
         }
         if (checkAuthLocal()) enterApp();
@@ -525,25 +529,47 @@
       var objUrl = URL.createObjectURL(blob);
       img.onload = function(){
         try {
-          var canvas = document.createElement("canvas");
-          canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
-          var ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
-          URL.revokeObjectURL(objUrl);
-          var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          var fullW = img.naturalWidth, fullH = img.naturalHeight;
+
+          // ★ QR検出は縮小画像で行う（フル解像度でgetImageDataすると激重）★
+          var QR_DETECT_MAX = 900; // ★ QR検出用の最大辺サイズ ★
+          var detectScale = Math.min(1, QR_DETECT_MAX / Math.max(fullW, fullH));
+          var dW = Math.round(fullW * detectScale);
+          var dH = Math.round(fullH * detectScale);
+
+          var detectCanvas = document.createElement("canvas");
+          detectCanvas.width = dW; detectCanvas.height = dH;
+          var dctx = detectCanvas.getContext("2d");
+          dctx.drawImage(img, 0, 0, dW, dH);
+          var imageData = dctx.getImageData(0, 0, dW, dH);
           var qr = (typeof jsQR === "function") ? jsQR(imageData.data, imageData.width, imageData.height) : null;
+
+          URL.revokeObjectURL(objUrl);
+
           if (!qr) { resolve(blob); return; }
+
+          // 縮小画像上の座標をフル解像度座標に変換
+          var inv = 1 / detectScale;
           var ys = [qr.location.topLeftCorner.y, qr.location.topRightCorner.y, qr.location.bottomLeftCorner.y, qr.location.bottomRightCorner.y];
-          var qrTop = Math.min.apply(null, ys), qrBottom = Math.max.apply(null, ys);
+          var qrTop = Math.min.apply(null, ys) * inv;
+          var qrBottom = Math.max.apply(null, ys) * inv;
           var qrHeight = qrBottom - qrTop;
           var newTop = Math.max(0, Math.round(qrTop - qrHeight * 2.6));
-          var newBottom = Math.min(canvas.height, Math.round(qrBottom + qrHeight * 0.6));
+          var newBottom = Math.min(fullH, Math.round(qrBottom + qrHeight * 0.6));
           var cropH = newBottom - newTop;
           if (cropH <= 0) { resolve(blob); return; }
+
+          // フル解像度からトリミングのみ行う（リサイズはこの後のprocessImageForUploadで行う）
           var out = document.createElement("canvas");
-          out.width = canvas.width; out.height = cropH;
-          out.getContext("2d").drawImage(canvas, 0, newTop, canvas.width, cropH, 0, 0, canvas.width, cropH);
-          out.toBlob(function(b){ resolve(b || blob); }, "image/webp", 0.92);
+          out.width = fullW; out.height = cropH;
+          out.getContext("2d").drawImage(img, 0, newTop, fullW, cropH, 0, 0, fullW, cropH);
+          // 中間ファイルなので品質は高めでOK（最終圧縮はprocessImageForUploadで行う）
+          var midDataUrl = out.toDataURL("image/jpeg", 0.92);
+          var midByteString = atob(midDataUrl.split(",")[1]);
+          var midAb = new ArrayBuffer(midByteString.length);
+          var midIa = new Uint8Array(midAb);
+          for (var mi = 0; mi < midByteString.length; mi++) { midIa[mi] = midByteString.charCodeAt(mi); }
+          resolve(new Blob([midAb], { type: "image/jpeg" }));
         } catch (err) { resolve(blob); }
       };
       img.onerror = function(){ URL.revokeObjectURL(objUrl); resolve(blob); };
@@ -551,20 +577,66 @@
     });
   }
 
-  function uploadToCloudinary(blob, filename) {
-    var fd = new FormData();
-    fd.append("file", blob, filename);
-    fd.append("upload_preset", CONFIG.uploadPreset);
-    fd.append("folder", CONFIG.folder);
-    return fetch("https://api.cloudinary.com/v1_1/" + CONFIG.cloudName + "/image/upload", { method: "POST", body: fd })
-      .then(function(res){
-        if (!res.ok) throw new Error("Cloudinary " + res.status);
-        return res.json();
-      })
-      .then(function(data){
-        if (!data.secure_url) throw new Error("URLなし");
-        return data.secure_url.replace("/upload/", "/upload/c_crop,g_center,h_1800,w_1100,q_auto,f_auto/");
-      });
+  // WebPに変換してサイズを1100x1800にリサイズ（Cloudinaryのc_crop相当）
+  function processImageForUpload(blob) {
+    return new Promise(function(resolve, reject){
+      var img = new Image();
+      var objUrl = URL.createObjectURL(blob);
+      img.onload = function(){
+        var TARGET_W = 1100, TARGET_H = 1800;
+        var srcRatio = img.naturalWidth / img.naturalHeight;
+        var targetRatio = TARGET_W / TARGET_H;
+        var sx, sy, sw, sh;
+        if (srcRatio > targetRatio) {
+          // 横長すぎる → 左右をトリミング
+          sh = img.naturalHeight;
+          sw = sh * targetRatio;
+          sy = 0;
+          sx = (img.naturalWidth - sw) / 2;
+        } else {
+          // 縦長すぎる → 上下をトリミング
+          sw = img.naturalWidth;
+          sh = sw / targetRatio;
+          sx = 0;
+          sy = (img.naturalHeight - sh) / 2;
+        }
+        var canvas = document.createElement("canvas");
+        canvas.width = TARGET_W;
+        canvas.height = TARGET_H;
+        canvas.getContext("2d").drawImage(img, sx, sy, sw, sh, 0, 0, TARGET_W, TARGET_H);
+        URL.revokeObjectURL(objUrl);
+
+        // ★ JPEG品質：0.5。下げるほどファイルサイズが小さくなる（0.0〜1.0）★
+        // iOS Safariのcanvas.toBlobがJPEG指定を無視してPNGを返すことがあるため、
+        // toDataURL経由で明示的にJPEGを取得してからBlob化する
+        var JPEG_QUALITY = 0.5;
+        var dataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+        var byteString = atob(dataUrl.split(",")[1]);
+        var mimeString = dataUrl.split(",")[0].split(":")[1].split(";")[0];
+        var ab = new ArrayBuffer(byteString.length);
+        var ia = new Uint8Array(ab);
+        for (var bi = 0; bi < byteString.length; bi++) { ia[bi] = byteString.charCodeAt(bi); }
+        var outBlob = new Blob([ab], { type: mimeString });
+        resolve(outBlob);
+      };
+      img.onerror = function(){ URL.revokeObjectURL(objUrl); reject(new Error("画像読み込み失敗")); };
+      img.src = objUrl;
+    });
+  }
+
+  function uploadToR2(blob, filename) {
+    return processImageForUpload(blob).then(function(processedBlob){
+      var fd = new FormData();
+      fd.append("file", processedBlob, filename);
+      fd.append("folder", CONFIG.folder);
+      fd.append("secret", CONFIG.r2UploadSecret);
+      return fetch(CONFIG.r2UploadUrl, { method: "POST", body: fd })
+        .then(function(res){ return res.json(); })
+        .then(function(data){
+          if (data.status !== "ok" || !data.url) throw new Error(data.message || "アップロード失敗");
+          return data.url;
+        });
+    });
   }
 
   function saveCard(card) {
@@ -643,7 +715,7 @@
       return trimByQR(card.file)
         .then(function(trimmed){
           card.blob = trimmed;
-          return uploadToCloudinary(trimmed, card.file.name);
+          return uploadToR2(trimmed, card.file.name);
         })
         .then(function(url){
           card.url = url; card.status = "done";
