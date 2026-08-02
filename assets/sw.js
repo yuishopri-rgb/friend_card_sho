@@ -3,8 +3,7 @@
    - assets（css/js）とR2/Cloudinary画像をキャッシュ
    - GAS API は stale-while-revalidate（キャッシュを即返して裏で更新）
 ============================================ */
-var CACHE_NAME = "freca-cache-v3";
-var API_CACHE  = "freca-api-v1";
+var CACHE_NAME = "freca-cache-v4";
 var ASSET_PATHS = [
   "/assets/style.css",
   "/assets/view.js",
@@ -24,7 +23,7 @@ self.addEventListener("activate", function (e) {
   e.waitUntil(
     caches.keys().then(function (keys) {
       return Promise.all(keys.map(function (k) {
-        if (k !== CACHE_NAME && k !== API_CACHE) return caches.delete(k);
+        if (k !== CACHE_NAME) return caches.delete(k);
       }));
     }).then(function () { return self.clients.claim(); })
   );
@@ -33,24 +32,8 @@ self.addEventListener("activate", function (e) {
 self.addEventListener("fetch", function (e) {
   var url = e.request.url;
 
-  // GAS API（GETのみ）：stale-while-revalidate
-  // キャッシュがあれば即座に返し、裏で最新を取得してキャッシュ更新
-  if (url.indexOf("script.google.com") !== -1 && e.request.method === "GET") {
-    e.respondWith(
-      caches.open(API_CACHE).then(function (cache) {
-        return cache.match(e.request).then(function (cached) {
-          var fetchPromise = fetch(e.request).then(function (res) {
-            if (res && res.status === 200) cache.put(e.request, res.clone());
-            return res;
-          }).catch(function () { return cached; });
-          return cached || fetchPromise;
-        });
-      })
-    );
-    return;
-  }
-
-  // GAS API（POST）：キャッシュしない
+  // GAS API：キャッシュしない（常に最新を取得する）
+  // ※ localStorage側でキャッシュしているため初期表示は速いまま
   if (url.indexOf("script.google.com") !== -1) return;
 
   // 画像（R2 / Cloudinary）：cache-first
