@@ -950,9 +950,9 @@
 
     updateCardBadge(card); updateCardStyle(card);
 
-    // bodyに仮追加（非表示）→ updateSectionsがグリッドに配置する
-    wrap.style.display = "none";
-    document.body.appendChild(wrap);
+    // DOMへの追加はupdateSectionsが行う（ここでは要素を返すだけ）
+    card._wrap = wrap;
+    return wrap;
   }
 
   function makeInputRow(label, id, ph, val) {
@@ -1085,33 +1085,32 @@
     var visibleIds = {};
     pendingVisible.concat(doneVisible).forEach(function(c){ visibleIds[c.id] = true; });
 
-    // グリッドを一旦クリアして再構築
+    // グリッドを再構築（wrap要素はcard._wrapにキャッシュして再利用する）
     var pg = $("pending-grid");
     var dg = $("done-grid");
-    pg.innerHTML = "";
-    dg.innerHTML = "";
+    var pgFrag = document.createDocumentFragment();
+    var dgFrag = document.createDocumentFragment();
 
-    pendingVisible.forEach(function(c){
-      var wrap = document.getElementById("wrap-" + c.id);
-      if (!wrap) renderCard(c);
-      wrap = document.getElementById("wrap-" + c.id);
-      if (wrap) { wrap.style.display = ""; pg.appendChild(wrap); }
-    });
-    doneVisible.forEach(function(c){
-      var wrap = document.getElementById("wrap-" + c.id);
-      if (!wrap) renderCard(c);
-      wrap = document.getElementById("wrap-" + c.id);
-      if (wrap) { wrap.style.display = ""; dg.appendChild(wrap); }
-    });
+    function attach(list, frag){
+      list.forEach(function(c){
+        var wrap = c._wrap || renderCard(c);
+        wrap.style.display = "";
+        frag.appendChild(wrap);
+        // 画像の遅延読み込み（表示されたタイミングでsrcをセット）
+        var img = wrap.querySelector("img[data-src]");
+        if (img && !img.dataset.loaded) {
+          img.src = img.dataset.src;
+          img.dataset.loaded = "1";
+        }
+      });
+    }
+    attach(pendingVisible, pgFrag);
+    attach(doneVisible, dgFrag);
 
-    // 表示カードの画像を読み込む
-    pendingVisible.concat(doneVisible).forEach(function(c){
-      var img = document.querySelector("#img-wrap-" + c.id + " img[data-src]");
-      if (img && !img.dataset.loaded) {
-        img.src = img.dataset.src;
-        img.dataset.loaded = "1";
-      }
-    });
+    pg.textContent = "";
+    dg.textContent = "";
+    pg.appendChild(pgFrag);
+    dg.appendChild(dgFrag);
 
     $("pending-section").style.display = pendingAll.length ? "" : "none";
     $("done-section").style.display    = (!filterPending && doneAll.length) ? "" : "none";
