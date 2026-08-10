@@ -6,7 +6,7 @@
 <title>ミクコちゃん</title>
 
 <!-- Content Security Policy: XSS二重防御 -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://aipri.jp https://www.takaratomy-arts.co.jp https://yuishopri.com; connect-src 'self' https://raw.githubusercontent.com https://cdn.jsdelivr.net; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://aipri.jp https://www.takaratomy-arts.co.jp https://yuishopri.com https://res.cloudinary.com; connect-src 'self' https://raw.githubusercontent.com https://cdn.jsdelivr.net https://docs.google.com; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
 
 <!-- ファビコン・iOSアイコン -->
 <link rel="icon" href="icon.png" type="image/png">
@@ -38,6 +38,8 @@
 <link rel="preconnect" href="https://www.takaratomy-arts.co.jp" crossorigin>
 <link rel="dns-prefetch" href="//raw.githubusercontent.com">
 <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
+<link rel="dns-prefetch" href="//res.cloudinary.com">
+<link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -92,7 +94,7 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
 .no-img{width:100%;aspect-ratio:1;background:var(--bg3);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--t3);text-align:center;padding:2px}
 .bdg{position:absolute;font-size:8px;padding:1px 4px;border-radius:4px;font-weight:700;line-height:1.5}
 .bs{top:3px;left:3px}.bp{top:3px;right:3px}
-.bai{background:#FFE4F0;color:#B5316A}.bpm{background:#E4EEFF;color:#2A5AAF}
+.bai{background:#FFE4F0;color:#B5316A}.bpm{background:#E4EEFF;color:#2A5AAF}.borig{background:#E6F7E9;color:#1E7A3D}
 .bワンピース{background:#FCE4EC;color:#A01A55}
 .bトップス{background:#FFECD6;color:#C05A00}
 .bボトムス{background:#E8F5E9;color:#1B6B2F}
@@ -253,6 +255,7 @@ body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-seri
     <div class="chip on" id="src-all"     onclick="setSrc('all')">すべて</div>
     <div class="chip"    id="src-aipri"   onclick="setSrc('aipri')">アイプリ</div>
     <div class="chip"    id="src-primagi" onclick="setSrc('primagi')">プリマジ</div>
+    <div class="chip"    id="src-orig"    onclick="setSrc('orig')">オリジナル</div>
   </div>
   <div class="fb-row">
     <span class="fb-label">シリーズ</span>
@@ -340,6 +343,22 @@ const GITHUB_RAW='https://raw.githubusercontent.com/yuishopri-rgb/e34tgea/main/'
 // const GITHUB_RAW='https://cdn.jsdelivr.net/gh/yuishopri-rgb/e34tgea@main/';
 const MANIFEST_URL=GITHUB_RAW+'manifest.json';
 
+/* ================================================================
+   オリジナルアイテム用スプレッドシート（Googleシートを「ウェブに公開」）
+
+   列の対応（フレカ管理シートを流用）:
+     A列 キャラ名   → 無視
+     B列 コーデ名   → coord_name
+     C列 画像URL    → img_url
+     D列 ブランド   → brand（シリーズフィルター）
+     E列 カードID   → card_id
+     F列 パーツ     → part（ワンピース/トップス/ボトムス/シューズ/アクセサリ）
+
+   ★ここに「ウェブに公開」で取得したCSVのURLを貼る（未設定なら空文字のまま）
+     形式: https://docs.google.com/spreadsheets/d/e/XXXX/pub?gid=NNN&single=true&output=csv
+================================================================ */
+const SHEET_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQg6zxmEm3RCGxgXpP8XBZXFsCNBwWOFkkP_-qyk2DtTaLz43ZqlCyh1N74c-aQbQhbUGlXuFpO1tgf/pub?output=csv';
+
 
 /* ===== セキュリティ対策 ===== */
 // HTMLエスケープ（XSS対策の基本）
@@ -372,6 +391,59 @@ function parseCsv(text){
     if(cols.length>=5)rows.push(cols);
   }
   return rows;
+}
+
+/* スプレッドシート専用パーサ
+   1行を全列そのまま返す（列数を問わない）。ヘッダー行は判定して除外 */
+function parseSheetCsvRaw(text){
+  const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim());
+  const rows=[];
+  for(const line of lines){
+    const cols=[];let cur='',inQ=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+      else if(c===','&&!inQ){cols.push(cur);cur='';}
+      else cur+=c;
+    }
+    cols.push(cur);
+    rows.push(cols);
+  }
+  return rows;
+}
+
+/* シートの行（A〜F列）→ アイテムオブジェクトへ変換
+   A:キャラ名(無視) B:コーデ名 C:画像URL D:ブランド E:カードID F:パーツ */
+const SHEET_PART_MAP={
+  'ワンピ':'ワンピース','ワンピース':'ワンピース',
+  'トップス':'トップス',
+  'ボトムス':'ボトムス','スカート':'ボトムス',
+  'シューズ':'シューズ','くつ':'シューズ',
+  'アクセ':'アクセサリ','アクセサリ':'アクセサリ','アクセサリー':'アクセサリ',
+};
+function parseSheetRows(rawRows){
+  const items=[];
+  for(let i=0;i<rawRows.length;i++){
+    const c=rawRows[i];
+    const name=(c[1]||'').trim();   // B列 コーデ名
+    const imgUrl=(c[2]||'').trim(); // C列 画像URL
+    const brand=(c[3]||'').trim();  // D列 ブランド
+    const cardId=(c[4]||'').trim(); // E列 カードID
+    const partRaw=(c[5]||'').trim();// F列 パーツ
+    // ヘッダー行や空行をスキップ
+    if(!name||!imgUrl) continue;
+    if(i===0 && /コーデ名|url|画像/i.test(name+imgUrl)) continue;
+    const img=safeUrl(imgUrl);
+    if(!img) continue;
+    const part=SHEET_PART_MAP[partRaw]||partRaw||'ワンピース';
+    const code=cardId||('ORIG-'+(i+1));
+    const b=brand||'オリジナル';
+    items.push({
+      id:'orig_'+code+'_'+part,
+      code, name, part, src:'orig', brand:b, img
+    });
+  }
+  return items;
 }
 
 let ALL=[],fSrc='all',fPart='all',fBrand='all';
@@ -469,6 +541,17 @@ async function loadData(){
     }
   }));
 
+  // オリジナルアイテム（スプレッドシート）を並行取得
+  let sheetItems=[];
+  if(SHEET_CSV_URL){
+    try{
+      const res=await fetch(SHEET_CSV_URL+(SHEET_CSV_URL.includes('?')?'&':'?')+'t='+Date.now(),{cache:'no-store'});
+      if(res.ok){
+        sheetItems=parseSheetRows(parseSheetCsvRaw(await res.text()));
+      }
+    }catch(e){ /* シート取得失敗は無視（公式データは表示される） */ }
+  }
+
   // ---- STEP3: 取得結果を組み立て ----
   const freshItems=[];
   const freshBrands=new Set();
@@ -484,6 +567,13 @@ async function loadData(){
       freshItems.push({id,code:cardId,name,part,src,brand,img:safeUrl(imgUrl)});
       freshBrands.add(brand);
     }
+  }
+  // オリジナルアイテムを一覧に混ぜる
+  for(const it of sheetItems){
+    if(freshSeen.has(it.id)) continue;
+    freshSeen.add(it.id);
+    freshItems.push(it);
+    freshBrands.add(it.brand);
   }
 
   if(!freshItems.length){
@@ -681,7 +771,7 @@ function _render(){
     // 最初の30件は eager、それ以降は lazy
     const loadAttr=i<30?'loading="eager" fetchpriority="high"':'loading="lazy" fetchpriority="low"';
     return`<div class="ic${sel?' sel':''}" data-id="${esc(it.id)}">
-      <div class="bdg bs ${it.src==='aipri'?'bai':'bpm'}">${it.src==='aipri'?'AI':'PM'}</div>
+      <div class="bdg bs ${it.src==='aipri'?'bai':it.src==='primagi'?'bpm':'borig'}">${it.src==='aipri'?'AI':it.src==='primagi'?'PM':'原'}</div>
       <div class="bdg bp b${esc(it.part)}">${esc(pl)}</div>
       ${it.img?`<img src="${esc(it.img)}" alt="" ${loadAttr} decoding="async">`:`<div class="no-img">${esc(it.code)}</div>`}
       <div class="nm">${esc(it.name)}</div>
@@ -808,7 +898,7 @@ function renderBrandChips(){
       return`<div class="chip ${fBrand===b?'on':''}" onclick="setBrand('${attr}')">${safe}</div>`;
     }).join('');
 }
-function setSrc(v){fSrc=v;['all','aipri','primagi'].forEach(k=>document.getElementById('src-'+k).classList.toggle('on',k===v));render();}
+function setSrc(v){fSrc=v;['all','aipri','primagi','orig'].forEach(k=>document.getElementById('src-'+k).classList.toggle('on',k===v));render();}
 function setPart(v){fPart=v;['all','ワンピース','トップス','ボトムス','シューズ','アクセサリ'].forEach(k=>document.getElementById('part-'+k).classList.toggle('on',k===v));render();}
 function setBrand(v){fBrand=v;renderBrandChips();render();}
 
