@@ -357,7 +357,7 @@ const MANIFEST_URL=GITHUB_RAW+'manifest.json';
    ★ここに「ウェブに公開」で取得したCSVのURLを貼る（未設定なら空文字のまま）
      形式: https://docs.google.com/spreadsheets/d/e/XXXX/pub?gid=NNN&single=true&output=csv
 ================================================================ */
-const SHEET_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQg6zxmEm3RCGxgXpP8XBZXFsCNBwWOFkkP_-qyk2DtTaLz43ZqlCyh1N74c-aQbQhbUGlXuFpO1tgf/pub?output=csv';
+const SHEET_CSV_URL='';
 
 
 /* ===== セキュリティ対策 ===== */
@@ -396,20 +396,32 @@ function parseCsv(text){
 /* スプレッドシート専用パーサ
    1行を全列そのまま返す（列数を問わない）。ヘッダー行は判定して除外 */
 function parseSheetCsvRaw(text){
-  const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim());
+  // クォート内のカンマ・改行も正しく扱う本格パーサ
+  // （行を先に\nで割る方式だと、セル内改行やカンマ入りURLで壊れるため）
+  text = text.replace(/^\uFEFF/,'');
   const rows=[];
-  for(const line of lines){
-    const cols=[];let cur='',inQ=false;
-    for(let i=0;i<line.length;i++){
-      const c=line[i];
-      if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
-      else if(c===','&&!inQ){cols.push(cur);cur='';}
-      else cur+=c;
+  let row=[], cur='', inQ=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(inQ){
+      if(ch==='"'){
+        if(text[i+1]==='"'){cur+='"';i++;} // エスケープされた""
+        else inQ=false;
+      }else{
+        cur+=ch;
+      }
+    }else{
+      if(ch==='"'){ inQ=true; }
+      else if(ch===','){ row.push(cur); cur=''; }
+      else if(ch==='\r'){ /* 無視（\r\n対策） */ }
+      else if(ch==='\n'){ row.push(cur); rows.push(row); row=[]; cur=''; }
+      else cur+=ch;
     }
-    cols.push(cur);
-    rows.push(cols);
   }
-  return rows;
+  // 最終行
+  if(cur!==''||row.length){ row.push(cur); rows.push(row); }
+  // 完全な空行は除外
+  return rows.filter(r=>r.some(c=>c&&c.trim()));
 }
 
 /* シートの行（A〜F列）→ アイテムオブジェクトへ変換
@@ -424,15 +436,29 @@ const SHEET_PART_MAP={
 function parseSheetRows(rawRows){
   const items=[];
   for(let i=0;i<rawRows.length;i++){
-    const c=rawRows[i];
+    let c=rawRows[i];
+    // 保険: 画像URL(C列)が裸のカンマで分断されている場合を復元
+    //   Cloudinaryの c_crop,g_center,... がクォートされずに列分割されると
+    //   c[2] が "https://...c_crop" で始まり、後続列にURLの続きが漏れる
+    if(c[2] && /^https?:\/\//i.test(c[2]) && !/\.(png|jpe?g|webp|gif)($|\?)/i.test(c[2])){
+      // C列以降を走査し、拡張子で終わる列までをURLとして連結
+      let j=2, url=c[2];
+      while(j+1<c.length && !/\.(png|jpe?g|webp|gif)($|\?)/i.test(url)){
+        j++;
+        url+=','+c[j];
+      }
+      // 連結後、C列=url、D以降を詰め直す
+      c=[c[0], c[1], url, ...c.slice(j+1)];
+    }
     const name=(c[1]||'').trim();   // B列 コーデ名
     const imgUrl=(c[2]||'').trim(); // C列 画像URL
     const brand=(c[3]||'').trim();  // D列 ブランド
     const cardId=(c[4]||'').trim(); // E列 カードID
     const partRaw=(c[5]||'').trim();// F列 パーツ
-    // ヘッダー行や空行をスキップ
+    // 空行スキップ
     if(!name||!imgUrl) continue;
-    if(i===0 && /コーデ名|url|画像/i.test(name+imgUrl)) continue;
+    // ヘッダー行スキップ（C列が画像URLでない行は見出しとみなす）
+    if(!/^https?:\/\//i.test(imgUrl)) continue;
     const img=safeUrl(imgUrl);
     if(!img) continue;
     const part=SHEET_PART_MAP[partRaw]||partRaw||'ワンピース';
@@ -771,7 +797,7 @@ function _render(){
     // 最初の30件は eager、それ以降は lazy
     const loadAttr=i<30?'loading="eager" fetchpriority="high"':'loading="lazy" fetchpriority="low"';
     return`<div class="ic${sel?' sel':''}" data-id="${esc(it.id)}">
-      <div class="bdg bs ${it.src==='aipri'?'bai':it.src==='primagi'?'bpm':'borig'}">${it.src==='aipri'?'AI':it.src==='primagi'?'PM':'原'}</div>
+      <div class="bdg bs ${it.src==='primagi'?'bpm':'bai'}">${it.src==='primagi'?'PM':'AI'}</div>
       <div class="bdg bp b${esc(it.part)}">${esc(pl)}</div>
       ${it.img?`<img src="${esc(it.img)}" alt="" ${loadAttr} decoding="async">`:`<div class="no-img">${esc(it.code)}</div>`}
       <div class="nm">${esc(it.name)}</div>
