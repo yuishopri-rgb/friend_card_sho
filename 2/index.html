@@ -6,7 +6,7 @@
 <title>ミクコちゃん</title>
 
 <!-- Content Security Policy: XSS二重防御 -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://aipri.jp https://www.takaratomy-arts.co.jp https://yuishopri.com https://res.cloudinary.com; connect-src 'self' https://raw.githubusercontent.com https://cdn.jsdelivr.net https://docs.google.com; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://aipri.jp https://www.takaratomy-arts.co.jp https://yuishopri.com https://res.cloudinary.com; connect-src 'self' https://raw.githubusercontent.com https://cdn.jsdelivr.net https://docs.google.com https://*.googleusercontent.com; font-src 'self' data:; base-uri 'self'; form-action 'self';">
 
 <!-- ファビコン・iOSアイコン -->
 <link rel="icon" href="icon.png" type="image/png">
@@ -357,7 +357,7 @@ const MANIFEST_URL=GITHUB_RAW+'manifest.json';
    ★ここに「ウェブに公開」で取得したCSVのURLを貼る（未設定なら空文字のまま）
      形式: https://docs.google.com/spreadsheets/d/e/XXXX/pub?gid=NNN&single=true&output=csv
 ================================================================ */
-const SHEET_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQg6zxmEm3RCGxgXpP8XBZXFsCNBwWOFkkP_-qyk2DtTaLz43ZqlCyh1N74c-aQbQhbUGlXuFpO1tgf/pub?output=csv';
+const SHEET_CSV_URL='';
 
 
 /* ===== セキュリティ対策 ===== */
